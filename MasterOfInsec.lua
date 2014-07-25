@@ -65,7 +65,7 @@ function OnLoad()
 	Config.miscs:addParam("following", "Follow while combo", SCRIPT_PARAM_ONOFF, true)
 	Config:addSubMenu("Ultimate Settings", "useUlt")
 	Config:addSubMenu("Additionals", "Ads")
-	Config.Ads:addSubMenu("Skin Changer", "VIP")
+	Config.Ads:addSubMenu("Skin Changer (VIP)", "VIP")
 	Config.Ads.VIP:addParam("skin", "Use custom skin", SCRIPT_PARAM_ONOFF, false)
 	Config.Ads.VIP:addParam("skin1", "Skin changer", SCRIPT_PARAM_SLICE, 1, 1, 7)
 	
