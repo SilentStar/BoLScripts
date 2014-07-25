@@ -111,7 +111,7 @@ function OnTick()
 		return
 	end
 	
-	if Config.Ads.VIP.skin and VIP_USER and skinChanged() then
+	if Config.Ads.VIP.skin and skinChanged() then
 		GenModelPacket("LeeSin", Config.Ads.VIP.skin1)
 		lastSkin = Config.Ads.VIP.skin1
 	end
