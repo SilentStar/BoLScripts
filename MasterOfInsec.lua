@@ -1,6 +1,6 @@
 if myHero.charName ~= "LeeSin" then return end
 
-local version = "1.1"
+local version = "1.2"
 local AUTOUPDATE = true
 
 
@@ -17,7 +17,7 @@ end
 if DOWNLOADING_SOURCELIB then print("Downloading required libraries, please wait...") return end
 
 if AUTOUPDATE then
-SourceUpdater(SCRIPT_NAME, version, "raw.github.com", "/SilentStar/BoLScripts/master/"..SCRIPT_NAME..".lua", SCRIPT_PATH .. GetCurrentEnv().FILE_NAME, "/SilentStar/BoLScripts/master/VersionFiles"..SCRIPT_NAME..".version"):CheckUpdate()
+SourceUpdater(SCRIPT_NAME, version, "raw.github.com", "/SilentStar/BoLScripts/master/"..SCRIPT_NAME..".lua", SCRIPT_PATH .. GetCurrentEnv().FILE_NAME, "/SilentStar/BoLScripts/master/VersionFiles/"..SCRIPT_NAME..".version"):CheckUpdate()
 end
 
 local RequireI = Require("SourceLib")
@@ -46,6 +46,8 @@ local qDmgs = {50, 80, 110, 140, 170}
 local useSight, lastWard, targetObj, friendlyObj = nil, nil, nil, nil
 local VP, ts = nil, nil
 
+local lastSkin = 0
+
 function OnLoad()
 	Config = scriptConfig("Master of Insec", "LeeSinCombo")
 	
@@ -62,6 +64,10 @@ function OnLoad()
 	Config.miscs:addParam("predInSec", "Use prediction for InSec", SCRIPT_PARAM_ONOFF, false)
 	Config.miscs:addParam("following", "Follow while combo", SCRIPT_PARAM_ONOFF, true)
 	Config:addSubMenu("Ultimate Settings", "useUlt")
+	Config:addSubMenu("Additionals", "Ads")
+	Config.Ads:addSubMenu("Skin Changer", "VIP")
+	Config.Ads.VIP:addParam("skin", "Use custom skin", SCRIPT_PARAM_ONOFF, false)
+	Config.Ads.VIP:addParam("skin1", "Skin changer", SCRIPT_PARAM_SLICE, 1, 1, 7)
 	
 	for i=1, heroManager.iCount do
 		local enemy = heroManager:GetHero(i)
@@ -71,6 +77,12 @@ function OnLoad()
 	end
 	
 	allyMinions = minionManager(MINION_ALLY, 1050, myHero, MINION_SORT_HEALTH_DES)
+	
+	if Config.Ads.VIP.skin then
+		GenModelPacket("LeeSin", Config.Ads.VIP.skin1)
+		lastSkin = Config.Ads.VIP.skin1
+	end
+	
 	ts = TargetSelector(TARGET_LESS_CAST_PRIORITY, 1050, DAMAGE_PHYSICAL)
 	ts.name = "Lee Sin"
 	Config:addTS(ts)
@@ -97,6 +109,11 @@ function OnTick()
 	
 	if not canAutoMove() then
 		return
+	end
+	
+	if Config.Ads.VIP.skin and VIP_USER and skinChanged() then
+		GenModelPacket("LeeSin", Config.Ads.VIP.skin1)
+		lastSkin = Config.Ads.VIP.skin1
 	end
 	
 	local SIGHTlot = GetInventorySlotItem(2049)
@@ -587,4 +604,33 @@ function OnDraw()
 			end
 		end
 	end
+end
+
+-- Change skin function, made by Shalzuth
+function GenModelPacket(champ, skinId)
+	p = CLoLPacket(0x97)
+	p:EncodeF(myHero.networkID)
+	p.pos = 1
+	t1 = p:Decode1()
+	t2 = p:Decode1()
+	t3 = p:Decode1()
+	t4 = p:Decode1()
+	p:Encode1(t1)
+	p:Encode1(t2)
+	p:Encode1(t3)
+	p:Encode1(bit32.band(t4,0xB))
+	p:Encode1(1)--hardcode 1 bitfield
+	p:Encode4(skinId)
+	for i = 1, #champ do
+		p:Encode1(string.byte(champ:sub(i,i)))
+	end
+	for i = #champ + 1, 64 do
+		p:Encode1(0)
+	end
+	p:Hide()
+	RecvPacket(p)
+end
+
+function skinChanged()
+	return Config.Ads.VIP.skin1 ~= lastSkin
 end
