@@ -1,6 +1,6 @@
 if myHero.charName ~= "LeeSin" then return end
 
-local version = "1.0"
+local version = "1.1"
 local AUTOUPDATE = true
 
 
@@ -37,7 +37,6 @@ end
 HWID = Base64Encode(tostring(os.getenv("PROCESSOR_IDENTIFIER")..os.getenv("USERNAME")..os.getenv("COMPUTERNAME")..os.getenv("PROCESSOR_LEVEL")..os.getenv("PROCESSOR_REVISION")))
 id = 31
 
-require 'SOW'
 
 local qRange, qDelay, qSpeed, qWidth = 1050, 0.25, 1800, 60
 
@@ -46,12 +45,6 @@ local lastTime, lastTimeQ, bonusDmg = 0, 0, 0
 local qDmgs = {50, 80, 110, 140, 170}
 local useSight, lastWard, targetObj, friendlyObj = nil, nil, nil, nil
 local VP, ts = nil, nil
-
-local range = 750 -- smite's range
-local smiteDmgs = {390, 410, 430, 450, 480, 510, 540, 570, 600, 640, 680, 720, 760, 800, 850, 900, 950, 1000} -- smite's dmgs
- 
-local smite = nil
-local jungleMinions = {}
 
 function OnLoad()
 	Config = scriptConfig("Master of Insec", "LeeSinCombo")
@@ -69,27 +62,6 @@ function OnLoad()
 	Config.miscs:addParam("predInSec", "Use prediction for InSec", SCRIPT_PARAM_ONOFF, false)
 	Config.miscs:addParam("following", "Follow while combo", SCRIPT_PARAM_ONOFF, true)
 	Config:addSubMenu("Ultimate Settings", "useUlt")
-	Config.draws:addParam("drawInsec", "Draw InSec Line", SCRIPT_PARAM_ONOFF, true)
-	Config.draws:addParam("drawQ", "Draw Q Range", SCRIPT_PARAM_ONOFF, false)
-	
-	if myHero:GetSpellData(SUMMONER_1).name:find("Smite") then smite = SUMMONER_1
-    elseif myHero:GetSpellData(SUMMONER_2).name:find("Smite") then smite = SUMMONER_2
-    end
-       
-    if smite ~= nil then
-	
-	aiConfig = scriptConfig("AutoSmite", "Auto Smite")
-	aiConfig:addSubMenu("Auto Smite Settings", "smites")
-	aiConfig:addParam("asmite", "Auto Smite", SCRIPT_PARAM_ONKEYTOGGLE, true, string.byte("J"))
-	aiConfig.smites:addParam("smiteAncient", "Smite Ancient Golem", SCRIPT_PARAM_ONOFF, true)
-	aiConfig.smites:addParam("smiteLizard", "Smite Lizard Elder", SCRIPT_PARAM_ONOFF, true)
-	aiConfig.smites:addParam("smiteWight", "Smite Wight", SCRIPT_PARAM_ONOFF, false)
-	aiConfig.smites:addParam("smiteGolem", "Smite Golem", SCRIPT_PARAM_ONOFF, false)
-	aiConfig.smites:addParam("smiteWolf", "Smite Giant Wolf", SCRIPT_PARAM_ONOFF, false)
-               
-    jungleMinions = minionManager(MINION_JUNGLE, range, myHero, MINION_SORT_HEALTH_ASC)
-	
-	end
 	
 	for i=1, heroManager.iCount do
 		local enemy = heroManager:GetHero(i)
@@ -110,8 +82,7 @@ function OnLoad()
 	Config:permaShow("scriptActive")
 	Config:permaShow("insecMake")
 	Config:permaShow("harass")
-	Config:permaShow("wardJump")	
-	aiConfig:permaShow("asmite")
+	Config:permaShow("wardJump")
 	
 	Config:addSubMenu("[Orbwalker]", "SOWorb")
 	Orbwalker:LoadToMenu(Config.SOWorb)
@@ -127,22 +98,6 @@ function OnTick()
 	if not canAutoMove() then
 		return
 	end
-	
-	if smite == nil or myHero.dead or not aiConfig.asmite or myHero:CanUseSpell(smite) ~= READY then return end
-       
-        local smiteDmg = smiteDmgs[myHero.level]
-       
-        jungleMinions:update()
-        for i, minion in pairs(jungleMinions.objects) do
-                if minion ~= nil and minion.valid then
-                        if smiteDmg >= minion.health then
-                                if checkMinionSmite(minion.name) then
-                                        CastSpell(smite, minion)
-                                        break
-                                end
-                        end
-                end
-        end
 	
 	local SIGHTlot = GetInventorySlotItem(2049)
 	local SIGHTREADY = (SIGHTlot ~= nil and myHero:CanUseSpell(SIGHTlot) == READY)
@@ -211,23 +166,6 @@ function OnTick()
 	if Config.harass then
 		harass()
 	end
-end
-
-function checkMinionSmite(name)
-        if  (Strstarts(name, "AncientGolem") and aiConfig.smiteAncient) or
-                (Strstarts(name, "GreatWraith")  and aiConfig.smiteWight) or
-                (Strstarts(name, "Golem")        and aiConfig.smiteGolem) or
-                (Strstarts(name, "GiantWolf")    and aiConfig.smiteWolf)  or
-                (Strstarts(name, "LizardElder")  and aiConfig.smiteLizard)  or
-                Strstarts(name, "Dragon")        or
-                Strstarts(name, "Worm")
-        then return true
-        else return false
-        end
-end
-
-function Strstarts(String, Start)
-   return string.sub(String, 1, string.len(Start))==Start
 end
 
 function moveToCursor()
