@@ -1,6 +1,6 @@
 if myHero.charName ~= "LeeSin" then return end
 
-local version = "1.2"
+local version = "1.3"
 local AUTOUPDATE = true
 
 
@@ -38,13 +38,20 @@ HWID = Base64Encode(tostring(os.getenv("PROCESSOR_IDENTIFIER")..os.getenv("USERN
 id = 31
 
 
-local qRange, qDelay, qSpeed, qWidth = 1050, 0.25, 1800, 60
+local qRange, qDelay, qSpeed, qWidth = 1050, 0.25, 2000, 60
 
 local allyMinions = {}
 local lastTime, lastTimeQ, bonusDmg = 0, 0, 0
 local qDmgs = {50, 80, 110, 140, 170}
 local useSight, lastWard, targetObj, friendlyObj = nil, nil, nil, nil
 local VP, ts = nil, nil
+
+local Ranges = { AA = 125 }
+local skills = {
+    SkillQ = { ready = false, name = myHero:GetSpellData(_Q).name, range = 1050, delay = 0.25, speed = 2000, width = 60 },
+	SkillW = { ready = false, name = myHero:GetSpellData(_W).name, range = 0, delay = 0.25, speed = 1000, width = 100 },
+	SkillE = { ready = false, name = myHero:GetSpellData(_E).name, range = 350, delay = 0, speed = 1300, width = 90 },
+}
 
 local lastSkin = 0
 
@@ -59,11 +66,26 @@ function OnLoad()
 	Config:addSubMenu("Draw Settings", "draws")
 	Config.draws:addParam("drawInsec", "Draw InSec Line", SCRIPT_PARAM_ONOFF, true)
 	Config.draws:addParam("drawQ", "Draw Q Range", SCRIPT_PARAM_ONOFF, false)
+	
 	Config:addSubMenu("Misc Settings", "miscs")
 	Config.miscs:addParam("wardJumpmax", "Ward Jump on max range if mouse too far", SCRIPT_PARAM_ONOFF, true)
 	Config.miscs:addParam("predInSec", "Use prediction for InSec", SCRIPT_PARAM_ONOFF, false)
-	Config.miscs:addParam("following", "Follow while combo", SCRIPT_PARAM_ONOFF, true)
+	Config.miscs:addParam("following", "Follow while combo", SCRIPT_PARAM_ONOFF, false)
+	
 	Config:addSubMenu("Ultimate Settings", "useUlt")
+	
+	Config:addSubMenu("Laneclear", "Laneclear")
+	Config.Laneclear:addParam("lclr", "Laneclear Key", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("M"))
+	Config.Laneclear:addParam("useClearQ", "Use Q in Laneclear", SCRIPT_PARAM_ONOFF, true)
+	Config.Laneclear:addParam("useClearW", "Use W in Laneclear", SCRIPT_PARAM_ONOFF, false)
+	Config.Laneclear:addParam("useClearE", "Use E in Laneclear", SCRIPT_PARAM_ONOFF, true)
+
+	Config:addSubMenu("Jungleclear", "Jungleclear")
+	Config.Jungleclear:addParam("jclr", "Jungleclear Key", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("M"))
+	Config.Jungleclear:addParam("useClearQ", "Use Q in Jungleclear", SCRIPT_PARAM_ONOFF, true)
+	Config.Jungleclear:addParam("useClearW", "Use W in Jungleclear", SCRIPT_PARAM_ONOFF, true)
+	Config.Jungleclear:addParam("useClearE", "Use E in Jungleclear", SCRIPT_PARAM_ONOFF, true)
+	
 	Config:addSubMenu("Additionals", "Ads")
 	Config.Ads:addSubMenu("Skin Changer (VIP)", "VIP")
 	Config.Ads.VIP:addParam("skin", "Use custom skin", SCRIPT_PARAM_ONOFF, false)
@@ -75,8 +97,6 @@ function OnLoad()
 			Config.useUlt:addParam("ult"..enemy.charName, "Use ultimate on "..enemy.charName, SCRIPT_PARAM_ONOFF, true)
 		end
 	end
-	
-	allyMinions = minionManager(MINION_ALLY, 1050, myHero, MINION_SORT_HEALTH_DES)
 	
 	if Config.Ads.VIP.skin then
 		GenModelPacket("LeeSin", Config.Ads.VIP.skin1)
@@ -96,24 +116,40 @@ function OnLoad()
 	Config:permaShow("harass")
 	Config:permaShow("wardJump")
 	
-	Config:addSubMenu("[Orbwalker]", "SOWorb")
+	Config:addSubMenu("Orbwalker", "SOWorb")
 	Orbwalker:LoadToMenu(Config.SOWorb)
+	
+	targetMinions = minionManager(MINION_ENEMY, 360, myHero, MINION_SORT_MAXHEALTH_DEC)
+	jungleMinions = minionManager(MINION_JUNGLE, 360, myHero, MINION_SORT_MAXHEALTH_DEC)
+	allyMinions = minionManager(MINION_ALLY, 1050, myHero, MINION_SORT_HEALTH_ASC)
 	
 	PrintChat("<font color = \"#33CCCC\">[Lee Sin] Master of Insec</font> <font color = \"#fff8e7\">SilentStar v"..version.."</font>")
 end
 
 function OnTick()
+	targetMinions:update()
+	jungleMinions:update()
+	CDHandler()
+	
 	if myHero.dead then
 		return
 	end
 	
-	if not canAutoMove() then
-		return
-	end
+	--if not canAutoMove() then
+	--	return
+	--end
 	
 	if Config.Ads.VIP.skin and skinChanged() then
 		GenModelPacket("LeeSin", Config.Ads.VIP.skin1)
 		lastSkin = Config.Ads.VIP.skin1
+	end
+	
+	if Config.Laneclear.lclr then
+		LaneClear()
+	end
+
+	if Config.Jungleclear.jclr then
+		JungleClear()
 	end
 	
 	local SIGHTlot = GetInventorySlotItem(2049)
@@ -185,6 +221,14 @@ function OnTick()
 	end
 end
 
+function CDHandler()
+	-- Spells
+	skills.SkillQ.ready = (myHero:CanUseSpell(_Q) == READY)
+	skills.SkillW.ready = (myHero:CanUseSpell(_W) == READY)
+	skills.SkillE.ready = (myHero:CanUseSpell(_E) == READY)
+	Ranges.AA = myHero.range
+end
+
 function moveToCursor()
 		if GetDistance(mousePos) then
 			local moveToPos = myHero + (Vector(mousePos) - myHero):normalized()*300
@@ -193,6 +237,7 @@ function moveToCursor()
 	end
 
 function harass()
+	moveToCursor()
 	for i=1, heroManager.iCount do
 		local target = heroManager:GetHero(i)
 		if ValidTarget(target, 1050) then
@@ -294,6 +339,7 @@ end
 local lastWardInsec = 0
 
 function insec()
+	moveToCursor()
 	if myHero:CanUseSpell(_R) == READY and friendlyObj ~= nil and targetObj ~= nil and friendlyObj.valid and targetObj.valid and ValidTarget(targetObj) then
 		if myHero:GetDistance(targetObj) < 375 then
 			local dPredict = GetDistance(targetObj, myHero)
@@ -461,10 +507,10 @@ function combo(inseca)
 			return
 		end
 		
-		if canAutoMove() then
-			myHero:Attack(focusEnemy)
-			return
-		end
+		--if canAutoMove() then
+		--	myHero:Attack(focusEnemy)
+		--	return
+		--end
 	end
 	
 	if Config.miscs.following then
@@ -476,7 +522,7 @@ function targetHasQ(target)
 	local dd = false
 	for b=1, target.buffCount do
 		local buff = target:getBuff(b)
-		if buff.valid and (buff.name == "BlindMonkQOne" or buff.name == "blindmonkqonechaos") and (buff.endT - GetGameTimer()) >= 0.3 then
+		if buff.valid and (buff.name == "BlindMonkQOne" or buff.name == "blindmonkpassive_cosmetic") and (buff.endT - GetGameTimer()) >= 0.3 then
 			dd = true
 			break
 		end
@@ -508,20 +554,20 @@ function getQDmg(target, health)
 	return dmg
 end
 
-function canAutoMove()
-	local linea = nil
-	local file = io.open(SCRIPT_PATH.."movementblock.txt", "r")
-	if file ~= nil then
-		for line in file:lines() do linea = line break end
-		file:close()
-	end
+--function canAutoMove()
+	--local linea = nil
+	--local file = io.open(SCRIPT_PATH.."movementblock.txt", "r")
+	--if file ~= nil then
+	--	for line in file:lines() do linea = line break end
+	--	file:close()
+	--end
 	
-	if linea == "1" then
-		return false
-	else
-		return true
-	end
-end
+	--if linea == "1" then
+	--	return false
+	--else
+	--	return true
+	--end
+--end
 
 function DrawLine3Dcustom(x1, y1, z1, x2, y2, z2, width, color)
     local p = WorldToScreen(D3DXVECTOR3(x1, y1, z1))
@@ -633,4 +679,44 @@ end
 
 function skinChanged()
 	return Config.Ads.VIP.skin1 ~= lastSkin
+end
+
+function LaneClear()
+	for i, targetMinion in pairs(targetMinions.objects) do
+		if targetMinion ~= nil then
+			if ValidTarget(targetMinion, qRange) then
+				if myHero:CanUseSpell(_Q) == READY then
+					if GetDistance(targetMinion, myHero) <= 1050 then
+					CastSpell(_Q, targetMinion.x, targetMinion.z)
+					end
+				end
+				if Config.Laneclear.useClearW and skills.SkillW.ready then
+					CastSpell(_W)
+				end
+					if Config.Laneclear.useClearE and skills.SkillE.ready and ValidTarget(targetMinion, Ranges.AA) then
+						CastSpell(_E, targetMinion)
+					end
+			end
+		end
+	end
+end
+
+function JungleClear()
+	for i, jungleMinion in pairs(jungleMinions.objects) do
+		if jungleMinion ~= nil then
+			if ValidTarget(jungleMinion, qRange) then
+				if myHero:CanUseSpell(_Q) == READY then
+					if GetDistance(jungleMinion, myHero) <= 1050 then
+					CastSpell(_Q, jungleMinion.x, jungleMinion.z)
+					end
+				end
+				if Config.Jungleclear.useClearW and skills.SkillW.ready then
+					CastSpell(_W)
+				end
+					if Config.Jungleclear.useClearE and skills.SkillE.ready and ValidTarget(jungleMinion, Ranges.AA) then
+						CastSpell(_E, jungleMinion)
+					end
+			end
+		end
+	end
 end
