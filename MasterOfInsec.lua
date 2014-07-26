@@ -1,6 +1,6 @@
 if myHero.charName ~= "LeeSin" then return end
 
-local version = "1.3"
+local version = "1.4"
 local AUTOUPDATE = true
 
 
@@ -70,7 +70,7 @@ function OnLoad()
 	Config:addSubMenu("Misc Settings", "miscs")
 	Config.miscs:addParam("wardJumpmax", "Ward Jump on max range if mouse too far", SCRIPT_PARAM_ONOFF, true)
 	Config.miscs:addParam("predInSec", "Use prediction for InSec", SCRIPT_PARAM_ONOFF, false)
-	Config.miscs:addParam("following", "Follow while combo", SCRIPT_PARAM_ONOFF, false)
+	Config.miscs:addParam("following", "Follow while combo", SCRIPT_PARAM_ONOFF, true)
 	
 	Config:addSubMenu("Ultimate Settings", "useUlt")
 	
