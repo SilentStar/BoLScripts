@@ -1,6 +1,6 @@
 if myHero.charName ~= "LeeSin" then return end
 
-local version = "1.4"
+local version = "1.5"
 local AUTOUPDATE = true
 
 
@@ -135,9 +135,9 @@ function OnTick()
 		return
 	end
 	
-	--if not canAutoMove() then
-	--	return
-	--end
+	if not canAutoMove() then
+		return
+	end
 	
 	if Config.Ads.VIP.skin and skinChanged() then
 		GenModelPacket("LeeSin", Config.Ads.VIP.skin1)
@@ -507,10 +507,10 @@ function combo(inseca)
 			return
 		end
 		
-		--if canAutoMove() then
-		--	myHero:Attack(focusEnemy)
-		--	return
-		--end
+		if canAutoMove() then
+			myHero:Attack(focusEnemy)
+			return
+		end
 	end
 	
 	if Config.miscs.following then
@@ -554,20 +554,20 @@ function getQDmg(target, health)
 	return dmg
 end
 
---function canAutoMove()
-	--local linea = nil
-	--local file = io.open(SCRIPT_PATH.."movementblock.txt", "r")
-	--if file ~= nil then
-	--	for line in file:lines() do linea = line break end
-	--	file:close()
-	--end
+function canAutoMove()
+	local linea = nil
+	local file = io.open(SCRIPT_PATH.."movementblock.txt", "r")
+	if file ~= nil then
+		for line in file:lines() do linea = line break end
+		file:close()
+	end
 	
-	--if linea == "1" then
-	--	return false
-	--else
-	--	return true
-	--end
---end
+	if linea == "1" then
+		return false
+	else
+		return true
+	end
+end
 
 function DrawLine3Dcustom(x1, y1, z1, x2, y2, z2, width, color)
     local p = WorldToScreen(D3DXVECTOR3(x1, y1, z1))
