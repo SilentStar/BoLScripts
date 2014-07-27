@@ -1,6 +1,6 @@
 if myHero.charName ~= "LeeSin" then return end
 
-local version = "1.5"
+local version = "1.6"
 local AUTOUPDATE = true
 
 
@@ -339,7 +339,6 @@ end
 local lastWardInsec = 0
 
 function insec()
-	moveToCursor()
 	if myHero:CanUseSpell(_R) == READY and friendlyObj ~= nil and targetObj ~= nil and friendlyObj.valid and targetObj.valid and ValidTarget(targetObj) then
 		if myHero:GetDistance(targetObj) < 375 then
 			local dPredict = GetDistance(targetObj, myHero)
