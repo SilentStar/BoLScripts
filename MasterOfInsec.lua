@@ -1,6 +1,6 @@
 if myHero.charName ~= "LeeSin" then return end
 
-local version = "1.7"
+local version = "1.8"
 local AUTOUPDATE = true
 
 
@@ -55,6 +55,14 @@ local skills = {
 
 local lastSkin = 0
 
+if myHero:GetSpellData(SUMMONER_1).name:find("SummonerFlash") then 
+		flash = SUMMONER_1
+	elseif myHero:GetSpellData(SUMMONER_2).name:find("SummonerFlash") then 
+		flash = SUMMONER_2
+	else 
+		flash = nil
+	end
+
 function OnLoad()
 	Config = scriptConfig("Master of Insec", "LeeSinCombo")
 	
@@ -71,6 +79,11 @@ function OnLoad()
 	Config.miscs:addParam("wardJumpmax", "Ward Jump on max range if mouse too far", SCRIPT_PARAM_ONOFF, true)
 	Config.miscs:addParam("predInSec", "Use prediction for InSec", SCRIPT_PARAM_ONOFF, false)
 	Config.miscs:addParam("following", "Follow while combo", SCRIPT_PARAM_ONOFF, true)
+	
+	Config:addSubMenu("Insec Settings", "insettings")
+	Config.insettings:addParam("wjump","Ward Jump Insec", SCRIPT_PARAM_ONOFF, true)
+	Config.insettings:addParam("wflash","Use Flash if W on CD", SCRIPT_PARAM_ONOFF, true)
+	Config.insettings:addParam("pflash","Prioritize flash over ward jump", SCRIPT_PARAM_ONOFF, false)
 	
 	Config:addSubMenu("Ultimate Settings", "useUlt")
 	
@@ -123,6 +136,8 @@ function OnLoad()
 	targetMinions = minionManager(MINION_ENEMY, 360, myHero, MINION_SORT_MAXHEALTH_DEC)
 	jungleMinions = minionManager(MINION_JUNGLE, 360, myHero, MINION_SORT_MAXHEALTH_DEC)
 	allyMinions = minionManager(MINION_ALLY, 1050, myHero, MINION_SORT_HEALTH_ASC)
+	
+	FREADY = (flash ~= nil and myHero:CanUseSpell(flash) == READY)
 	
 	PrintChat("<font color = \"#33CCCC\">[Lee Sin] Master of Insec</font> <font color = \"#fff8e7\">SilentStar v"..version.."</font>")
 end
@@ -187,13 +202,39 @@ function OnTick()
 		end
 	end
 	
-	if Config.insecMake then
+	if Config.insecMake and Config.insettings.wjump and not Config.insettings.pflash then
 		if insec() then return end
+	end
+	
+	if Config.insecMake and Config.insettings.wflash and not Config.insettings.pflash then
+		if winsec() then return end
+	end
+	
+	if Config.insecMake and Config.insettings.pflash then
+		if FREADY then
+				pinsec()
+			elseif not FREADY then
+				insec()
+		end
 	end
 	
 	if Config.scriptActive or Config.insecMake then
 		local inseca = nil
 		if Config.insecMake then inseca = targetObj end
+		combo(inseca)
+		return
+	end
+	
+	if Config.scriptActive or Config.wflash then
+		local inseca = nil
+		if Config.wflash then inseca = targetObj end
+		combo(inseca)
+		return
+	end
+	
+	if Config.scriptActive or Config.pflash then
+		local inseca = nil
+		if Config.pflash then inseca = targetObj end
 		combo(inseca)
 		return
 	end
@@ -328,7 +369,7 @@ end
 function OnCreateObj(object)
 	if myHero.dead then return end
 	
-	if Config.wardJump or Config.insecMake then
+	if Config.wardJump or Config.insecMake or Config.insettings.wjump or Config.insettings.wflash or Config.insettings.pflash  then
 		if object ~= nil and object.valid and (object.name == "VisionWard" or object.name == "SightWard") then
 			lastWard = object
 			lastTime = GetTickCount()
@@ -358,14 +399,14 @@ function insec()
 			end
 		end
 		
-		if myHero:CanUseSpell(_W) == READY and myHero:GetSpellData(_W).name == "BlindMonkWOne" then
+		if FREADY then
 			if lastTime > (GetTickCount() - 1000) then
 				if (GetTickCount() - lastTime) >= 10 then
-					CastSpell(_W, lastWard)
+					--CastSpell(_W, lastWard)
 					lastWardInsec = os.clock() + 0.5
 					return true
 				end
-			elseif useSight ~= nil then
+			elseif flash ~= nil then
 				local targetObj2 = nil
 				if Config.miscs.predInSec then
 					targetObj2, HitChance = VP:GetPredictedPos(targetObj, 0.25, 2000, myHero)
@@ -382,7 +423,113 @@ function insec()
 				positiona.x = xE
 				positiona.z = zE
 				if GetDistance(myHero, positiona) < 600 then
-					CastSpell(useSight, xE, zE)
+					CastSpell(flash, xE, zE)
+					return true
+				end
+			end
+		end
+	end
+	
+	return false
+end
+
+function pinsec()
+	if myHero:CanUseSpell(_R) == READY and friendlyObj ~= nil and targetObj ~= nil and friendlyObj.valid and targetObj.valid and ValidTarget(targetObj) then
+		if myHero:GetDistance(targetObj) < 375 then
+			local dPredict = GetDistance(targetObj, myHero)
+			
+			local xE = myHero.x + ((dPredict + 500) / dPredict) * (targetObj.x - myHero.x)
+			local zE = myHero.z + ((dPredict + 500) / dPredict) * (targetObj.z - myHero.z)
+			
+			local positiona = {}
+			positiona.x = xE
+			positiona.z = zE
+			
+			local newDistance = GetDistance(friendlyObj, targetObj) - GetDistance(friendlyObj, positiona)
+			if newDistance > 0 and (newDistance / 500) > 0.7 then
+				CastSpell(_R, targetObj)
+				return true
+			end
+		end
+		
+		if FREADY then
+			if lastTime > (GetTickCount() - 1000) then
+				if (GetTickCount() - lastTime) >= 10 then
+					--CastSpell(_W, lastWard)
+					lastWardInsec = os.clock() + 0.5
+					return true
+				end
+			elseif flash ~= nil then
+				local targetObj2 = nil
+				if Config.miscs.predInSec then
+					targetObj2, HitChance = VP:GetPredictedPos(targetObj, 0.25, 2000, myHero)
+				else
+					targetObj2 = targetObj
+				end
+				
+				local wardDistance = 300
+				local dPredict = GetDistance(targetObj2, friendlyObj)
+				local xE = friendlyObj.x + ((dPredict + wardDistance) / dPredict) * (targetObj2.x - friendlyObj.x)
+				local zE = friendlyObj.z + ((dPredict + wardDistance) / dPredict) * (targetObj2.z - friendlyObj.z)
+				
+				local positiona = {}
+				positiona.x = xE
+				positiona.z = zE
+				if GetDistance(myHero, positiona) < 600 then
+					CastSpell(flash, xE, zE)
+					return true
+				end
+			end
+		end
+	end
+	
+	return false
+end
+
+function winsec()
+	if myHero:CanUseSpell(_R) == READY and friendlyObj ~= nil and targetObj ~= nil and friendlyObj.valid and targetObj.valid and ValidTarget(targetObj) then
+		if myHero:GetDistance(targetObj) < 375 then
+			local dPredict = GetDistance(targetObj, myHero)
+			
+			local xE = myHero.x + ((dPredict + 500) / dPredict) * (targetObj.x - myHero.x)
+			local zE = myHero.z + ((dPredict + 500) / dPredict) * (targetObj.z - myHero.z)
+			
+			local positiona = {}
+			positiona.x = xE
+			positiona.z = zE
+			
+			local newDistance = GetDistance(friendlyObj, targetObj) - GetDistance(friendlyObj, positiona)
+			if newDistance > 0 and (newDistance / 500) > 0.7 then
+				CastSpell(_R, targetObj)
+				return true
+			end
+		end
+		
+		if FREADY then
+			if lastTime > (GetTickCount() - 1000) then
+				if (GetTickCount() - lastTime) >= 10 then
+					--CastSpell(_W, lastWard)
+					lastWardInsec = os.clock() + 0.5
+					return true
+				end
+			elseif flash ~= nil then
+				local targetObj2 = nil
+				if Config.miscs.predInSec then
+					targetObj2, HitChance = VP:GetPredictedPos(targetObj, 0.25, 2000, myHero)
+				else
+					targetObj2 = targetObj
+				end
+				
+				local wardDistance = 300
+				local dPredict = GetDistance(targetObj2, friendlyObj)
+				local xE = friendlyObj.x + ((dPredict + wardDistance) / dPredict) * (targetObj2.x - friendlyObj.x)
+				local zE = friendlyObj.z + ((dPredict + wardDistance) / dPredict) * (targetObj2.z - friendlyObj.z)
+				
+				local positiona = {}
+				positiona.x = xE
+				positiona.z = zE
+				if GetDistance(myHero, positiona) < 600 then
+					CastSpell(flash, xE, zE)
 					return true
 				end
 			end
@@ -581,9 +728,41 @@ function OnDraw()
         local WREADY = (myHero:CanUseSpell(_W) == READY)
         local EREADY = (myHero:CanUseSpell(_E) == READY)
         local RREADY = (myHero:CanUseSpell(_R) == READY)
+		local FREADY = (myHero:CanUseSpell(flash) == READY)
         local spellQ = myHero:GetSpellData(_Q)
        
         if RREADY and WREADY then
+                if useSight ~= nil then
+                        local validTargets = 0
+                        if targetObj ~= nil and targetObj.valid and ValidTarget(targetObj) then
+                                DrawCircle(targetObj.x, targetObj.y, targetObj.z, 70, 0x00CC00)
+                                validTargets = validTargets + 1
+                        end
+                       
+                        if friendlyObj ~= nil and friendlyObj.valid then
+                                DrawCircle(friendlyObj.x, friendlyObj.y, friendlyObj.z, 70, 0x00CC00)
+                                validTargets = validTargets + 1
+                        end
+                       
+                        if validTargets == 2 and Config.draws.drawInsec then
+                                local dPredict = GetDistance(targetObj, friendlyObj)
+                                local rangeR = 300
+                                if myHero:GetDistance(targetObj) <= 1100 then
+                                        rangeR = 800
+                                end
+                                local xQ = targetObj.x + (rangeR / dPredict) * (friendlyObj.x - targetObj.x)
+                                local zQ = targetObj.z + (rangeR / dPredict) * (friendlyObj.z - targetObj.z)
+                               
+                                local positiona = {}
+                                positiona.x = xQ
+                                positiona.z = zQ
+                               
+                                DrawLine3Dcustom(targetObj.x, targetObj.y, targetObj.z, positiona.x, targetObj.y, positiona.z, 2)
+                        end
+                end
+        end
+		
+		if RREADY and FREADY and not WREADY then
                 if useSight ~= nil then
                         local validTargets = 0
                         if targetObj ~= nil and targetObj.valid and ValidTarget(targetObj) then
