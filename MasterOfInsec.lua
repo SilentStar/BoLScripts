@@ -1,6 +1,6 @@
 if myHero.charName ~= "LeeSin" then return end
 
-local version = "1.9"
+local version = "2.0"
 local AUTOUPDATE = true
 
 
@@ -23,6 +23,9 @@ end
 local RequireI = Require("SourceLib")
 RequireI:Add("vPrediction", "https://raw.github.com/Hellsing/BoL/master/common/VPrediction.lua")
 RequireI:Add("SOW", "https://raw.github.com/Hellsing/BoL/master/common/SOW.lua")
+if VIP_USER then
+	RequireI:Add("Prodiction", "https://bitbucket.org/Klokje/public-klokjes-bol-scripts/raw/ec830facccefb3b52212dba5696c08697c3c2854/Test/Prodiction/Prodiction.lua")	
+end
 
 RequireI:Check()
 
@@ -45,6 +48,9 @@ local lastTime, lastTimeQ, bonusDmg = 0, 0, 0
 local qDmgs = {50, 80, 110, 140, 170}
 local useSight, lastWard, targetObj, friendlyObj = nil, nil, nil, nil
 local VP, ts = nil, nil
+
+local Prodict
+local ProdictQ
 
 local Ranges = { AA = 125 }
 local skills = {
@@ -103,6 +109,7 @@ function OnLoad()
 	Config.Ads:addSubMenu("Skin Changer (VIP)", "VIP")
 	Config.Ads.VIP:addParam("skin", "Use custom skin", SCRIPT_PARAM_ONOFF, false)
 	Config.Ads.VIP:addParam("skin1", "Skin changer", SCRIPT_PARAM_SLICE, 1, 1, 7)
+	Config.Ads:addParam("prodiction", "Use Prodiction", SCRIPT_PARAM_ONOFF, false)
 	
 	for i=1, heroManager.iCount do
 		local enemy = heroManager:GetHero(i)
@@ -111,7 +118,7 @@ function OnLoad()
 		end
 	end
 	
-	if Config.Ads.VIP.skin then
+	if Config.Ads.VIP.skin and VIP_USER then
 		GenModelPacket("LeeSin", Config.Ads.VIP.skin1)
 		lastSkin = Config.Ads.VIP.skin1
 	end
@@ -136,6 +143,13 @@ function OnLoad()
 	targetMinions = minionManager(MINION_ENEMY, 360, myHero, MINION_SORT_MAXHEALTH_DEC)
 	jungleMinions = minionManager(MINION_JUNGLE, 360, myHero, MINION_SORT_MAXHEALTH_DEC)
 	allyMinions = minionManager(MINION_ALLY, 1050, myHero, MINION_SORT_HEALTH_ASC)
+	
+		if VIP_USER then
+		require 'Prodiction'
+		Prodict = ProdictManager.GetInstance()
+		ProdictQ = Prodict:AddProdictionObject(_Q, skills.SkillQ.range, skills.SkillQ.speed, skills.SkillQ.delay, skills.SkillQ.width)
+
+	end
 	
 	FREADY = (flash ~= nil and myHero:CanUseSpell(flash) == READY)
 	
@@ -257,7 +271,7 @@ function OnTick()
 		JungleClear()
 	end
 	
-	if Config.Ads.VIP.skin and skinChanged() then
+	if Config.Ads.VIP.skin and VIP_USER and skinChanged() then
 		GenModelPacket("LeeSin", Config.Ads.VIP.skin1)
 		lastSkin = Config.Ads.VIP.skin1
 	end
@@ -285,11 +299,18 @@ function harass()
 		if ValidTarget(target, 1050) then
 			if myHero:CanUseSpell(_Q) == READY then
 				if myHero:GetSpellData(_Q).name == "BlindMonkQOne" then
+					if VIP_USER and Config.Ads.prodiction then
+								local pos, info = Prodiction.GetPrediction(target, skills.SkillQ.range, skills.SkillQ.speed, skills.SkillQ.delay, skills.SkillQ.width)
+								if info.hitchance >= 2 and GetDistance(pos) <= 1050 then
+								CastSpell(_Q, pos.x, pos.z)
+					end
+				else
 					local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(target, qDelay, qWidth, qRange, qSpeed, myHero, true)
 					if HitChance >= 2 then
 						CastSpell(_Q, CastPosition.x, CastPosition.z)
 						return
 					end
+				end
 				elseif targetHasQ(target) then
 					if myHero:CanUseSpell(_W) == READY and myHero:GetSpellData(_W).name == "BlindMonkWOne" and enemiesAround(1500) == 1 and myHero.mana >= 80 and (myHero.health / myHero.maxHealth) > 0.5 then
 						allyMinions:update()
@@ -587,11 +608,18 @@ function combo(inseca)
         if focusEnemy ~= nil then
                 if QREADY then
                         if myHero:GetSpellData(_Q).name == "BlindMonkQOne" then
+							if VIP_USER and Config.Ads.prodiction then
+								local pos, info = Prodiction.GetPrediction(focusEnemy, skills.SkillQ.range, skills.SkillQ.speed, skills.SkillQ.delay, skills.SkillQ.width)
+								if info.hitchance >= 2 and GetDistance(pos) <= 1050 then 
+								CastSpell(_Q, pos.x, pos.z)
+								end
+							else
                                 local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(focusEnemy, qDelay, qWidth, qRange, qSpeed, myHero, true)
                                 if HitChance >= 2 then
                                         CastSpell(_Q, CastPosition.x, CastPosition.z)
                                         return
                                 end
+							end
                         elseif targetHasQ(focusEnemy) and (myHero:GetDistance(focusEnemy) > 500 or insecOk or (getQDmg(focusEnemy, 0) + getDmg("AD", focusEnemy, myHero)) > focusEnemy.health or (GetTickCount() - lastTimeQ) > 2500) then
                                 if insecOk then
                                         lastWardInsec = os.clock() + 1
