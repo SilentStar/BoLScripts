@@ -1,6 +1,6 @@
 if myHero.charName ~= "LeeSin" then return end
 
-local version = "1.8"
+local version = "1.9"
 local AUTOUPDATE = true
 
 
@@ -399,14 +399,14 @@ function insec()
 			end
 		end
 		
-		if FREADY then
+		if myHero:CanUseSpell(_W) == READY and myHero:GetSpellData(_W).name == "BlindMonkWOne" then
 			if lastTime > (GetTickCount() - 1000) then
 				if (GetTickCount() - lastTime) >= 10 then
-					--CastSpell(_W, lastWard)
+					CastSpell(_W, lastWard)
 					lastWardInsec = os.clock() + 0.5
 					return true
 				end
-			elseif flash ~= nil then
+			elseif useSight ~= nil then
 				local targetObj2 = nil
 				if Config.miscs.predInSec then
 					targetObj2, HitChance = VP:GetPredictedPos(targetObj, 0.25, 2000, myHero)
@@ -423,7 +423,7 @@ function insec()
 				positiona.x = xE
 				positiona.z = zE
 				if GetDistance(myHero, positiona) < 600 then
-					CastSpell(flash, xE, zE)
+					CastSpell(useSight, xE, zE)
 					return true
 				end
 			end
