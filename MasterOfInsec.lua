@@ -1,6 +1,6 @@
 if myHero.charName ~= "LeeSin" then return end
 
-local version = "2.1"
+local version = "2.2"
 local AUTOUPDATE = true
 
 
@@ -306,6 +306,8 @@ function harass()
 								local pos, info = Prodiction.GetPrediction(target, skills.SkillQ.range, skills.SkillQ.speed, skills.SkillQ.delay, skills.SkillQ.width)
 								if info.hitchance >= 2 and GetDistance(pos) <= 1100 then
 								ProdictQ:GetPredictionCallBack(target, CastQ)
+								else
+								CastSpell(_Q, pos.x, pos.z)
 					end
 				else
 					local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(target, qDelay, qWidth, qRange, qSpeed, myHero, true)
@@ -615,6 +617,8 @@ function combo(inseca)
 								local pos, info = Prodiction.GetPrediction(focusEnemy, skills.SkillQ.range, skills.SkillQ.speed, skills.SkillQ.delay, skills.SkillQ.width)
 								if info.hitchance >= 2 and GetDistance(pos) <= 1100 then 
 								ProdictQ:GetPredictionCallBack(focusEnemy, CastQ)
+								else
+								CastSpell(_Q, pos.x, pos.z)
 								end
 							else
                                 local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(focusEnemy, qDelay, qWidth, qRange, qSpeed, myHero, true)
@@ -942,10 +946,11 @@ function JungleClear()
 	end
 end
 
-function CastQ(unit, pos, spell)
-        if GetDistance(pos) - getHitBoxRadius(unit)/2 < skills.SkillQ.range then
-            local willCollide = ProdictQCol:GetMinionCollision(pos, myHero)
-            if not willCollide then CastSpell(_Q, pos.x, pos.z) end
-        end
+function CastQ(unit, focusEnemy, spell)
+		ts:update()
+		focusEnemy = ts.target
+        if GetDistance(focusEnemy) - getHitBoxRadius(unit)/2 < skills.SkillQ.range then
+            local willCollide = ProdictQCol:GetMinionCollision(focusEnemy, myHero)
+            if not willCollide then CastSpell(_Q, focusEnemy.x, focusEnemy.z) end
+		end
 end
-
