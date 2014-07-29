@@ -1,6 +1,6 @@
 if myHero.charName ~= "LeeSin" then return end
 
-local version = "2.0"
+local version = "2.1"
 local AUTOUPDATE = true
 
 
@@ -24,7 +24,8 @@ local RequireI = Require("SourceLib")
 RequireI:Add("vPrediction", "https://raw.github.com/Hellsing/BoL/master/common/VPrediction.lua")
 RequireI:Add("SOW", "https://raw.github.com/Hellsing/BoL/master/common/SOW.lua")
 if VIP_USER then
-	RequireI:Add("Prodiction", "https://bitbucket.org/Klokje/public-klokjes-bol-scripts/raw/ec830facccefb3b52212dba5696c08697c3c2854/Test/Prodiction/Prodiction.lua")	
+	RequireI:Add("Prodiction", "https://bitbucket.org/Klokje/public-klokjes-bol-scripts/raw/ec830facccefb3b52212dba5696c08697c3c2854/Test/Prodiction/Prodiction.lua")
+	RequireI:Add("Collision", "https://bitbucket.org/Klokje/public-klokjes-bol-scripts/raw/b891699e739f77f77fd428e74dec00b2a692fdef/Common/Collision.lua")
 end
 
 RequireI:Check()
@@ -41,7 +42,7 @@ HWID = Base64Encode(tostring(os.getenv("PROCESSOR_IDENTIFIER")..os.getenv("USERN
 id = 31
 
 
-local qRange, qDelay, qSpeed, qWidth = 1050, 0.25, 1800, 60
+local qRange, qDelay, qSpeed, qWidth = 1100, 0.25, 1800, 60
 
 local allyMinions = {}
 local lastTime, lastTimeQ, bonusDmg = 0, 0, 0
@@ -50,11 +51,11 @@ local useSight, lastWard, targetObj, friendlyObj = nil, nil, nil, nil
 local VP, ts = nil, nil
 
 local Prodict
-local ProdictQ
+local ProdictQ, ProdictQCol
 
 local Ranges = { AA = 125 }
 local skills = {
-    SkillQ = { ready = false, name = myHero:GetSpellData(_Q).name, range = 1050, delay = 0.25, speed = 1800, width = 60 },
+    SkillQ = { ready = false, name = myHero:GetSpellData(_Q).name, range = 1100, delay = 0.25, speed = 1800, width = 60 },
 	SkillW = { ready = false, name = myHero:GetSpellData(_W).name, range = 0, delay = 0.25, speed = 1000, width = 100 },
 	SkillE = { ready = false, name = myHero:GetSpellData(_E).name, range = 350, delay = 0, speed = 1300, width = 90 },
 }
@@ -123,7 +124,7 @@ function OnLoad()
 		lastSkin = Config.Ads.VIP.skin1
 	end
 	
-	ts = TargetSelector(TARGET_NEAR_MOUSE, 1050, DAMAGE_PHYSICAL)
+	ts = TargetSelector(TARGET_NEAR_MOUSE, 1100, DAMAGE_PHYSICAL)
 	ts.name = "Lee Sin"
 	Config:addTS(ts)
 	
@@ -142,12 +143,14 @@ function OnLoad()
 	
 	targetMinions = minionManager(MINION_ENEMY, 360, myHero, MINION_SORT_MAXHEALTH_DEC)
 	jungleMinions = minionManager(MINION_JUNGLE, 360, myHero, MINION_SORT_MAXHEALTH_DEC)
-	allyMinions = minionManager(MINION_ALLY, 1050, myHero, MINION_SORT_HEALTH_ASC)
+	allyMinions = minionManager(MINION_ALLY, 1100, myHero, MINION_SORT_HEALTH_ASC)
 	
 		if VIP_USER then
 		require 'Prodiction'
+		require 'Collision'
 		Prodict = ProdictManager.GetInstance()
 		ProdictQ = Prodict:AddProdictionObject(_Q, skills.SkillQ.range, skills.SkillQ.speed, skills.SkillQ.delay, skills.SkillQ.width)
+		ProdictQCol = Collision(skills.SkillQ.range, skills.SkillQ.speed, skills.SkillQ.delay, skills.SkillQ.width)
 
 	end
 	
@@ -296,13 +299,13 @@ function harass()
 	moveToCursor()
 	for i=1, heroManager.iCount do
 		local target = heroManager:GetHero(i)
-		if ValidTarget(target, 1050) then
+		if ValidTarget(target, 1100) then
 			if myHero:CanUseSpell(_Q) == READY then
 				if myHero:GetSpellData(_Q).name == "BlindMonkQOne" then
 					if VIP_USER and Config.Ads.prodiction then
 								local pos, info = Prodiction.GetPrediction(target, skills.SkillQ.range, skills.SkillQ.speed, skills.SkillQ.delay, skills.SkillQ.width)
-								if info.hitchance >= 2 and GetDistance(pos) <= 1050 then
-								CastSpell(_Q, pos.x, pos.z)
+								if info.hitchance >= 2 and GetDistance(pos) <= 1100 then
+								ProdictQ:GetPredictionCallBack(target, CastQ)
 					end
 				else
 					local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(target, qDelay, qWidth, qRange, qSpeed, myHero, true)
@@ -610,8 +613,8 @@ function combo(inseca)
                         if myHero:GetSpellData(_Q).name == "BlindMonkQOne" then
 							if VIP_USER and Config.Ads.prodiction then
 								local pos, info = Prodiction.GetPrediction(focusEnemy, skills.SkillQ.range, skills.SkillQ.speed, skills.SkillQ.delay, skills.SkillQ.width)
-								if info.hitchance >= 2 and GetDistance(pos) <= 1050 then 
-								CastSpell(_Q, pos.x, pos.z)
+								if info.hitchance >= 2 and GetDistance(pos) <= 1100 then 
+								ProdictQ:GetPredictionCallBack(focusEnemy, CastQ)
 								end
 							else
                                 local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(focusEnemy, qDelay, qWidth, qRange, qSpeed, myHero, true)
@@ -749,7 +752,7 @@ end
 
 function OnDraw()
         if Config.draws.drawQ then
-                DrawCircle(myHero.x, myHero.y, myHero.z, 1050, 0x25de69)
+                DrawCircle(myHero.x, myHero.y, myHero.z, 1100, 0x25de69)
         end
        
         local QREADY = (myHero:CanUseSpell(_Q) == READY)
@@ -891,7 +894,7 @@ function LaneClear()
 		if targetMinion ~= nil then
 			if ValidTarget(targetMinion, qRange) then
 				if myHero:CanUseSpell(_Q) == READY then
-					if targetMinion ~= nil and GetDistance(targetMinion, myHero) <= 1050 then
+					if targetMinion ~= nil and GetDistance(targetMinion, myHero) <= 1100 then
 						local foo = GetDistance(targetMinion, myHero)
 						if foo < distance then
 						targetMinion = targetMinion
@@ -919,7 +922,7 @@ function JungleClear()
 		if jungleMinion ~= nil then
 			if ValidTarget(jungleMinion, qRange) then
 				if myHero:CanUseSpell(_Q) == READY then
-					if jungleMinion ~= nil and GetDistance(jungleMinion, myHero) <= 1050 then
+					if jungleMinion ~= nil and GetDistance(jungleMinion, myHero) <= 1100 then
 						local foo = GetDistance(jungleMinion, myHero)
 						if foo < distance then
 						jungleMinion = jungleMinion
@@ -938,3 +941,11 @@ function JungleClear()
 		end
 	end
 end
+
+function CastQ(unit, pos, spell)
+        if GetDistance(pos) - getHitBoxRadius(unit)/2 < skills.SkillQ.range then
+            local willCollide = ProdictQCol:GetMinionCollision(pos, myHero)
+            if not willCollide then CastSpell(_Q, pos.x, pos.z) end
+        end
+end
+
