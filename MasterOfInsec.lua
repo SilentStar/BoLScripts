@@ -1,6 +1,6 @@
 if myHero.charName ~= "LeeSin" then return end
 
-local version = "2.3"
+local version = "2.4"
 local AUTOUPDATE = true
 
 
@@ -235,11 +235,11 @@ function OnTick()
 	end
 	
 	if Config.insecMake and Config.insettings.pflash then
-		if FREADY then
-				pinsec()
-			elseif not FREADY then
-				insec()
-		end
+		if pinsec() then return end
+	end
+	
+	if Config.insecMake and Config.insettings.pflash and Config.insettings.wjump and not FREADY then
+		if insec() then return end
 	end
 	
 	if Config.scriptActive and not Config.wflash and not Config.pflash and not Config.wjump then
@@ -321,7 +321,7 @@ function harass()
 								if info.hitchance >= 2 and GetDistance(pos) <= 1100 then
 								ProdictQ:GetPredictionCallBack(target, CastQ)
 								else
-								CastSpell(_Q, pos.x, pos.z)
+								CastQ(focusEnemy)
 					end
 				else
 					local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(target, qDelay, qWidth, qRange, qSpeed, myHero, true)
@@ -507,7 +507,7 @@ function pinsec()
 					targetObj2 = targetObj
 				end
 				
-				local wardDistance = 300
+				local wardDistance = 400
 				local dPredict = GetDistance(targetObj2, friendlyObj)
 				local xE = friendlyObj.x + ((dPredict + wardDistance) / dPredict) * (targetObj2.x - friendlyObj.x)
 				local zE = friendlyObj.z + ((dPredict + wardDistance) / dPredict) * (targetObj2.z - friendlyObj.z)
@@ -560,7 +560,7 @@ function winsec()
 					targetObj2 = targetObj
 				end
 				
-				local wardDistance = 300
+				local wardDistance = 400
 				local dPredict = GetDistance(targetObj2, friendlyObj)
 				local xE = friendlyObj.x + ((dPredict + wardDistance) / dPredict) * (targetObj2.x - friendlyObj.x)
 				local zE = friendlyObj.z + ((dPredict + wardDistance) / dPredict) * (targetObj2.z - friendlyObj.z)
@@ -632,7 +632,7 @@ function combo(inseca)
 								if info.hitchance >= 2 and GetDistance(pos) <= 1100 then 
 								ProdictQ:GetPredictionCallBack(focusEnemy, CastQ)
 								else
-								CastSpell(_Q, pos.x, pos.z)
+								CastQ(focusEnemy)
 								end
 							else
                                 local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(focusEnemy, qDelay, qWidth, qRange, qSpeed, myHero, true)
@@ -753,7 +753,7 @@ function normalcombo()
 								if info.hitchance >= 2 and GetDistance(pos) <= 1100 then 
 								ProdictQ:GetPredictionCallBack(focusEnemy, CastQ)
 								else
-								CastSpell(_Q, pos.x, pos.z)
+								CastQ(focusEnemy)
 								end
 							else
                                 local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(focusEnemy, qDelay, qWidth, qRange, qSpeed, myHero, true)
@@ -790,7 +790,7 @@ function normalcombo()
                         end
                 end
                
-                if READY and Config.csettings.autowusage then
+                if WREADY and Config.csettings.autowusage then
                         if enemiesAround(300) >= 1 and (myHero.health / myHero.maxHealth) < 0.6 then
                                 CastSpell(_W)
                                 return
@@ -1031,7 +1031,6 @@ function skinChanged()
 end
 
 function LaneClear()
-	local distance = 9999
 	local targetMinion = nil
 	
 	for i, targetMinion in pairs(targetMinions.objects) do
@@ -1039,12 +1038,11 @@ function LaneClear()
 			if ValidTarget(targetMinion, qRange) then
 				if myHero:CanUseSpell(_Q) == READY then
 					if targetMinion ~= nil and GetDistance(targetMinion, myHero) <= 1100 then
-						local foo = GetDistance(targetMinion, myHero)
-						if foo < distance then
-						targetMinion = targetMinion
-						distance = foo
-						CastSpell(_Q, targetMinion.x, targetMinion.z)
-						end
+						local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(targetMinion, qDelay, qWidth, qRange, qSpeed, myHero, true)
+                                if HitChance >= 2 then
+									CastSpell(_Q, targetMinion.x, targetMinion.z)
+									return	
+								end
 					end
 				end
 				if Config.Laneclear.useClearW and skills.SkillW.ready then
@@ -1059,7 +1057,6 @@ function LaneClear()
 end
 
 function JungleClear()
-	local distance = 9999
 	local jungleMinion = nil
 	
 	for i, jungleMinion in pairs(jungleMinions.objects) do
@@ -1067,12 +1064,11 @@ function JungleClear()
 			if ValidTarget(jungleMinion, qRange) then
 				if myHero:CanUseSpell(_Q) == READY then
 					if jungleMinion ~= nil and GetDistance(jungleMinion, myHero) <= 1100 then
-						local foo = GetDistance(jungleMinion, myHero)
-						if foo < distance then
-						jungleMinion = jungleMinion
-						distance = foo
-						CastSpell(_Q, jungleMinion.x, jungleMinion.z)
-						end
+						local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(jungleMinion, qDelay, qWidth, qRange, qSpeed, myHero, true)
+                                if HitChance >= 2 then
+									CastSpell(_Q, jungleMinion.x, jungleMinion.z)
+									return	
+								end
 					end
 				end
 				if Config.Jungleclear.useClearW and skills.SkillW.ready then
