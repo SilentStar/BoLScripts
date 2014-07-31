@@ -1,4 +1,4 @@
-Lee Sin - Master Of Insec
+Master Of Insec
 ==========
 
 About the script:
