@@ -1,4 +1,4 @@
-BoLScripts
+Lee Sin - Master Of Insec
 ==========
 
 About the script:
