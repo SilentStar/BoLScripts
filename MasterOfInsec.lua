@@ -1,6 +1,6 @@
 if myHero.charName ~= "LeeSin" then return end
 
-local version = "2.5"
+local version = "2.6"
 local AUTOUPDATE = true
 
 
@@ -1039,10 +1039,10 @@ function LaneClear()
 			if Config.Laneclear.useClearQ and skills.SkillQ.ready and ValidTarget(targetMinion, skills.SkillQ.range) and GetDistance(targetMinion, myHero) <= 1050 then
 				CastSpell(_Q, targetMinion.x, targetMinion.z)
 			end
-			if Config.Laneclear.useClearW and skills.SkillW.ready and ValidTarget(targetMinion, skills.SkillW.range) then
-				CastSpell(_W, targetMinion)
+			if Config.Laneclear.useClearW and skills.SkillW.ready then
+				CastSpell(_W)
 			end
-			if Config.Laneclear.useClearE and skills.SkillE.ready and ValidTarget(targetMinion, skills.SkillE.range) then
+			if Config.Laneclear.useClearE and skills.SkillE.ready and ValidTarget(targetMinion, Ranges.AA) then
 				CastSpell(_E, targetMinion)
 			end
 		end
@@ -1056,11 +1056,11 @@ function JungleClear()
 			if Config.Jungleclear.useClearQ and skills.SkillQ.ready and ValidTarget(jungleMinion, skills.SkillQ.range) and GetDistance(jungleMinion, myHero) <= 1050 then
 				CastSpell(_Q, jungleMinion.x, jungleMinion.z)
 			end
-			if Config.Jungleclear.useClearW and skills.SkillW.ready and ValidTarget(jungleMinion, skills.SkillW.range) then
-				CastSpell(_W, jungleMinion)
+			if Config.Jungleclear.useClearW and skills.SkillW.ready then
+				CastSpell(_W)
 			end
-			if Config.Jungleclear.useClearE and skills.SkillE.ready and ValidTarget(jungleMinion, skills.SkillE.range) then
-				CastSpell(_W, jungleMinion)
+			if Config.Jungleclear.useClearE and skills.SkillE.ready and ValidTarget(jungleMinion, Ranges.AA) then
+				CastSpell(_E, jungleMinion)
 			end
 		end
 	end
