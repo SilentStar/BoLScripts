@@ -1,6 +1,6 @@
 if myHero.charName ~= "LeeSin" then return end
 
-local version = "2.6"
+local version = "2.7"
 local AUTOUPDATE = true
 
 
@@ -74,6 +74,7 @@ function OnLoad()
 	Config = scriptConfig("Master of Insec", "LeeSinCombo")
 	
 	Config:addParam("scriptActive", "Combo", SCRIPT_PARAM_ONKEYDOWN, false, 32)
+	Config:addParam("starActive", "Star Combo", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("X"))
 	Config:addParam("insecMake", "Insec", SCRIPT_PARAM_ONKEYDOWN, false, 84)
 	Config:addParam("harass", "Harass", SCRIPT_PARAM_ONKEYDOWN, false, 71)
 	Config:addParam("wardJump", "Ward Jump", SCRIPT_PARAM_ONKEYDOWN, false, 67)
@@ -141,6 +142,7 @@ function OnLoad()
 	Orbwalker = SOW(VP)
 	
 	Config:permaShow("scriptActive")
+	Config:permaShow("starActive")
 	Config:permaShow("insecMake")
 	Config:permaShow("harass")
 	Config:permaShow("wardJump")
@@ -269,6 +271,10 @@ function OnTick()
 		if Config.pflash then inseca = targetObj end
 		combo(inseca)
 		return
+	end
+	
+	if Config.starActive then
+		if starcombo() then return end
 	end
 	
 	if Config.wardJump then
@@ -588,6 +594,28 @@ function OnProcessSpell(unit, spell)
 	end
 end
 
+function starjump()
+		if myHero:CanUseSpell(_W) == READY and myHero:GetSpellData(_W).name == "BlindMonkWOne" then
+		if lastTime > (GetTickCount() - 1000) then
+			if (GetTickCount() - lastTime) >= 10 then
+				CastSpell(_W, lastWard)
+			end
+		elseif useSight ~= nil then
+			local wardX = mousePos.x
+			local wardZ = mousePos.z
+			if Config.miscs.wardJumpmax then
+				local distanceMouse = GetDistance(myHero, mousePos)
+				if distanceMouse > 600 then
+					wardX = myHero.x + (600 / distanceMouse) * (mousePos.x - myHero.x)
+					wardZ = myHero.z + (600 / distanceMouse) * (mousePos.z - myHero.z)
+				end
+			end
+			
+			CastSpell(useSight, wardX, wardZ)
+		end
+	end
+end
+
 function combo(inseca)
         local QREADY = (myHero:CanUseSpell(_Q) == READY)
         local WREADY = (myHero:CanUseSpell(_W) == READY)
@@ -803,6 +831,123 @@ function normalcombo()
 				if WREADY and Config.csettings.wusage then
                          if enemiesAround(300) >= 1 then
                                 CastSpell(_W)
+                                return
+                        end
+                end
+               
+                if BILGEREADY and myHero:GetDistance(focusEnemy) < 450 then
+                        CastSpell(BILGESlot, focusEnemy)
+                        return
+                end
+               
+                if BLADEREADY and myHero:GetDistance(focusEnemy) < 450 then
+                        CastSpell(BLADESLot, focusEnemy)
+                        return
+                end
+               
+                if TIAMATREADY and enemiesAround(350) >= 1 then
+                        CastSpell(TIAMATSlot)
+                        return
+                end
+               
+                if HYDRAREADY and (enemiesAround(350) >= 2 or (getDmg("AD", focusEnemy, myHero) < focusEnemy.health and enemiesAround(350) == 1)) then
+                        CastSpell(HYDRASlot)
+                        return
+                end
+               
+                if RANDREADY and enemiesAround(450) >= 1 then
+                        CastSpell(RANDSlot)
+                        return
+                end
+               
+                if canAutoMove() then
+                        myHero:Attack(focusEnemy)
+                        return
+                end
+        end
+       
+        if Config.miscs.following then
+                myHero:MoveTo(mousePos.x, mousePos.z)
+        end
+end
+
+function starcombo()
+        local QREADY = (myHero:CanUseSpell(_Q) == READY)
+        local WREADY = (myHero:CanUseSpell(_W) == READY)
+        local EREADY = (myHero:CanUseSpell(_E) == READY)
+        local RREADY = (myHero:CanUseSpell(_R) == READY)
+       
+        local TIAMATSlot = GetInventorySlotItem(3077)
+        local TIAMATREADY = (TIAMATSlot ~= nil and myHero:CanUseSpell(TIAMATSlot) == READY)
+        local HYDRASlot = GetInventorySlotItem(3074)
+        local HYDRAREADY = (HYDRASlot ~= nil and myHero:CanUseSpell(HYDRASlot) == READY)
+        local BLADESLot = GetInventorySlotItem(3153)
+        local BLADEREADY = (BLADESLot ~= nil and myHero:CanUseSpell(BLADESLot) == READY)
+        local BILGESlot = GetInventorySlotItem(3144)
+        local BILGEREADY = (BILGESlot ~= nil and myHero:CanUseSpell(BILGESlot) == READY)
+        local RANDSlot = GetInventorySlotItem(3143)
+        local RANDREADY = (RANDSlot ~= nil and myHero:CanUseSpell(RANDSlot) == READY)
+        local bladeaSlot = GetInventorySlotItem(3142)
+        local bladeaaREADY = (bladeaSlot ~= nil and myHero:CanUseSpell(bladeaSlot) == READY)
+ 
+        local focusEnemy = nil
+        local minimumHit = -1
+        local lowPriority = false
+       
+        local rangeFocus = 400
+        if QREADY then
+                rangeFocus = 1000
+        end
+       
+                ts:update()
+                focusEnemy = ts.target
+       
+       if focusEnemy ~= nil then
+                if QREADY then
+                        if myHero:GetSpellData(_Q).name == "BlindMonkQOne" then
+							if VIP_USER and Config.Ads.prodiction then
+								local pos, info = Prodiction.GetPrediction(focusEnemy, skills.SkillQ.range, skills.SkillQ.speed, skills.SkillQ.delay, skills.SkillQ.width)
+								if info.hitchance >= 2 and GetDistance(pos) <= 1100 then 
+								ProdictQ:GetPredictionCallBack(focusEnemy, CastQ)
+								else
+								CastSpell(_Q, pos.x, pos.z)
+								end
+							else
+                                local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(focusEnemy, qDelay, qWidth, qRange, qSpeed, myHero, true)
+                                if HitChance >= 2 then
+                                        CastSpell(_Q, CastPosition.x, CastPosition.z)
+                                        return
+                                end
+							end
+                        
+							if targetHasQ(focusEnemy) and (myHero:GetDistance(focusEnemy) > 500 or (getQDmg(focusEnemy, 0) + getDmg("AD", focusEnemy, myHero)) > focusEnemy.health or (GetTickCount() - lastTimeQ) > 2500) then
+                                lastWardInsec = os.clock() + 1
+								starjump()
+							end
+						end
+                end
+				
+               
+                if RREADY and myHero:GetDistance(focusEnemy) <= 375 then
+                                CastSpell(_R, focusEnemy)
+                                return
+                end
+				
+				if starjump() ~= true then
+					if targetHasQ(focusEnemy) and (myHero:GetDistance(focusEnemy) > 500 or (getQDmg(focusEnemy, 0) + getDmg("AD", focusEnemy, myHero)) > focusEnemy.health or (GetTickCount() - lastTimeQ) > 2500) then
+                                lastWardInsec = os.clock() + 1
+                               
+                                CastSpell(_Q)
+                                return
+                        end
+					end
+				
+				if EREADY and (not RREADY or os.clock() > lastWardInsec) then
+                        if myHero:GetSpellData(_E).name == "BlindMonkEOne" and enemiesAround(300) >= 1 then
+                                CastSpell(_E)
+                                return
+                        elseif enemiesAround(450) >= 1 and myHero:GetSpellData(_E).name ~= "BlindMonkEOne" then
+                                CastSpell(_E)
                                 return
                         end
                 end
