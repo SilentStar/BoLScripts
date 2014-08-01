@@ -1,6 +1,6 @@
 if myHero.charName ~= "LeeSin" then return end
 
-local version = "2.7"
+local version = "2.8"
 local AUTOUPDATE = true
 
 
@@ -43,6 +43,7 @@ id = 31
 
 
 local qRange, qDelay, qSpeed, qWidth = 1050, 0.25, 1800, 60
+local sRange = 600
 
 local allyMinions = {}
 local lastTime, lastTimeQ, bonusDmg = 0, 0, 0
@@ -596,24 +597,16 @@ end
 
 function starjump()
 		if myHero:CanUseSpell(_W) == READY and myHero:GetSpellData(_W).name == "BlindMonkWOne" then
-		if lastTime > (GetTickCount() - 1000) then
-			if (GetTickCount() - lastTime) >= 10 then
-				CastSpell(_W, lastWard)
-			end
-		elseif useSight ~= nil then
-			local wardX = mousePos.x
-			local wardZ = mousePos.z
-			if Config.miscs.wardJumpmax then
-				local distanceMouse = GetDistance(myHero, mousePos)
-				if distanceMouse > 600 then
-					wardX = myHero.x + (600 / distanceMouse) * (mousePos.x - myHero.x)
-					wardZ = myHero.z + (600 / distanceMouse) * (mousePos.z - myHero.z)
+			if lastTime > (GetTickCount() - 1000) then
+				if (GetTickCount() - lastTime) >= 10 then
+					CastSpell(_W, lastWard)
 				end
+	elseif useSight ~= nil then
+					if ValidTarget(ts.target, sRange) and (TargetHaveBuff("blindmonkpassive_cosmetic", myHero) or TargetHaveBuff("BlindMonkQOne", myHero)) and myHero:CanUseSpell(_R) == READY then
+                           CastSpell(useSight, ts.target.x, ts.target.z)
+					end
 			end
-			
-			CastSpell(useSight, wardX, wardZ)
 		end
-	end
 end
 
 function combo(inseca)
@@ -933,7 +926,7 @@ function starcombo()
                                 return
                 end
 				
-				if starjump() ~= true then
+				if starjump() ~= true and not RREADY then
 					if targetHasQ(focusEnemy) and (myHero:GetDistance(focusEnemy) > 500 or (getQDmg(focusEnemy, 0) + getDmg("AD", focusEnemy, myHero)) > focusEnemy.health or (GetTickCount() - lastTimeQ) > 2500) then
                                 lastWardInsec = os.clock() + 1
                                
@@ -1051,7 +1044,7 @@ function OnDraw()
         local WREADY = (myHero:CanUseSpell(_W) == READY)
         local EREADY = (myHero:CanUseSpell(_E) == READY)
         local RREADY = (myHero:CanUseSpell(_R) == READY)
-		local FREADY = (myHero:CanUseSpell(flash) == READY)
+		local FREADY = (flash ~= nil and myHero:CanUseSpell(flash) == READY)
         local spellQ = myHero:GetSpellData(_Q)
        
         if RREADY and WREADY then
