@@ -1,6 +1,6 @@
 if myHero.charName ~= "LeeSin" then return end
 
-local version = "2.9.5"
+local version = "2.95"
 local AUTOUPDATE = true
 
 
