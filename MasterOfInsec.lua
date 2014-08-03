@@ -1,6 +1,6 @@
 if myHero.charName ~= "LeeSin" then return end
 
-local version = "2.9"
+local version = "2.9.5"
 local AUTOUPDATE = true
 
 
@@ -187,42 +187,8 @@ function OnTick()
 		return
 	end
 	
-	local SIGHTlot = GetInventorySlotItem(2049)
-	local SIGHTREADY = (SIGHTlot ~= nil and myHero:CanUseSpell(SIGHTlot) == READY)
-	local SIGHTlot2 = GetInventorySlotItem(2045)
-	local SIGHTREADY2 = (SIGHTlot2 ~= nil and myHero:CanUseSpell(SIGHTlot2) == READY)
-	local SIGHTlot3 = GetInventorySlotItem(3340)
-	local SIGHTREADY3 = (SIGHTlot3 ~= nil and myHero:CanUseSpell(SIGHTlot3) == READY)
-	local SIGHTlot4 = GetInventorySlotItem(2044)
-	local SIGHTREADY4 = (SIGHTlot4 ~= nil and myHero:CanUseSpell(SIGHTlot4) == READY)
-	local SIGHTlot5 = GetInventorySlotItem(3361)
-	local SIGHTREADY5 = (SIGHTlot5 ~= nil and myHero:CanUseSpell(SIGHTlot5) == READY)
-	local SIGHTlot6 = GetInventorySlotItem(3362)
-	local SIGHTREADY6 = (SIGHTlot6 ~= nil and myHero:CanUseSpell(SIGHTlot6) == READY)
-	local SIGHTlot7 = GetInventorySlotItem(3154)
-	local SIGHTREADY7 = (SIGHTlot7 ~= nil and myHero:CanUseSpell(SIGHTlot7) == READY)
-	local SIGHTlot8 = GetInventorySlotItem(3160)
-	local SIGHTREADY8 = (SIGHTlot8 ~= nil and myHero:CanUseSpell(SIGHTlot8) == READY)
-	
-	useSight = nil
-	if SIGHTREADY then
-		useSight = SIGHTlot
-	elseif SIGHTREADY2 then
-		useSight = SIGHTlot2
-	elseif SIGHTREADY7 then
-		useSight = SIGHTlot7
-	elseif SIGHTREADY8 then
-		useSight = SIGHTlot8
-	elseif SIGHTREADY3 then
-		useSight = SIGHTlot3
-	elseif SIGHTREADY5 then
-		useSight = SIGHTlot5
-	elseif SIGHTREADY6 then
-		useSight = SIGHTlot6
-	elseif SIGHTREADY4 then
-		useSight = SIGHTlot4
-	end
-	
+	useSight = wardSlot()
+
 	bonusDmg = myHero.addDamage * 0.90
 	
 	local target = GetTarget()
@@ -303,6 +269,16 @@ function OnTick()
 	if Config.Ads.VIP.skin and VIP_USER and skinChanged() then
 		GenModelPacket("LeeSin", Config.Ads.VIP.skin1)
 		lastSkin = Config.Ads.VIP.skin1
+	end
+end
+
+function wardSlot()
+	local jumpTable = {3340,3350,3205,3207,2049,2045,2044,3361,3154,3362,3160,2043}
+	for i, v in ipairs(jumpTable) do
+		local slot = GetInventorySlotItem(v)
+		if slot ~= nil and (myHero:CanUseSpell(slot) == READY) then
+			return slot
+		end	
 	end
 end
 
@@ -466,7 +442,7 @@ function insec()
 					targetObj2 = targetObj
 				end
 				
-				local wardDistance = 350
+				local wardDistance = 300
 				local dPredict = GetDistance(targetObj2, friendlyObj)
 				local xE = friendlyObj.x + ((dPredict + wardDistance) / dPredict) * (targetObj2.x - friendlyObj.x)
 				local zE = friendlyObj.z + ((dPredict + wardDistance) / dPredict) * (targetObj2.z - friendlyObj.z)
@@ -1156,15 +1132,20 @@ function LaneClear()
 		if targetMinion ~= nil then
 			if myHero:GetSpellData(_Q).name == "BlindMonkQOne" and Config.Laneclear.useClearQ and skills.SkillQ.ready and ValidTarget(targetMinion, skills.SkillQ.range) and GetDistance(targetMinion, myHero) <= 1000 then
 				CastSpell(_Q, targetMinion.x, targetMinion.z)
-			end
-			if myHero:GetSpellData(_W).name == "BlindMonkWOne" and Config.Laneclear.useClearW and skills.SkillW.ready then
-				CastSpell(_W)
+			elseif TargetHaveBuff("BlindMonkQOne", myHero) or TargetHaveBuff("blindmonkpassive_cosmetic", myHero) and GetDistance(targetMinion) < 500 then
+				CastSpell(_Q)
 			end
 			if myHero:GetSpellData(_E).name == "BlindMonkEOne" and Config.Laneclear.useClearE and skills.SkillE.ready and ValidTarget(targetMinion, Ranges.AA) then
 				CastSpell(_E, targetMinion)
+			elseif TargetHaveBuff("blindmonkpassive_cosmetic", myHero) and GetDistance(targetMinion) < 500 then
+				CastSpell(_E)
+			end
+			if myHero:GetSpellData(_W).name == "BlindMonkWOne" and Config.Laneclear.useClearW and skills.SkillW.ready then
+				CastSpell(_W)
+			elseif GetDistance(targetMinion) < 200 then
+				CastSpell(_W)
 			end
 		end
-		
 	end
 end
 
@@ -1197,4 +1178,4 @@ function CastQ(unit, focusEnemy, spell)
             local willCollide = ProdictQCol:GetMinionCollision(focusEnemy, myHero)
             if not willCollide then CastSpell(_Q, focusEnemy.x, focusEnemy.z) end
 		end
-end 
+end
