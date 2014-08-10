@@ -1,5 +1,7 @@
-Master Of Insec
+Master Scripts
 ==========
 
 About the script:
-Just edited master of insec lee sin script. Learning lua day by day.
+Learning lua day by day.
+
+There is my new release!
