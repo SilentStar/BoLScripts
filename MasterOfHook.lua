@@ -379,6 +379,11 @@ function OnTick()
 	end
 
 	if MOHConfig.KeyBindings.Combo then
+
+		if ValidTarget(Target, Ranges.AA) then
+			myHero:Attack(Target)
+		end
+		
 		if EREADY and MOHConfig.ComboSettings.UseE and ValidTarget(Target) and MOHConfig.ComboSettings.EMode == 1 then
 			CastE(Target)
 		elseif EREADY and MOHConfig.ComboSettings.UseE and ValidTarget(Target) and MOHConfig.ComboSettings.EMode == 2 then
@@ -423,10 +428,6 @@ function OnTick()
 			if CastQ2() then
 				CastQ2()
 			end
-		end
-
-		if ValidTarget(Target, Ranges.AA) then
-			myHero:Attack(Target)
 		end
 	end
 
