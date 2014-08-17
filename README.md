@@ -1,7 +1,10 @@
 Master Scripts
 ==========
 
-About the script:
+About the scripts:
 Learning lua day by day.
 
-There is my new release!
+There is my releases:
+Thresh - Master of Hook
+Lee Sin - Master of Insec
+Amumu - Master of Sadness
