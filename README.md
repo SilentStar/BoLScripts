@@ -4,7 +4,5 @@ Master Scripts
 About the scripts:
 Learning lua day by day.
 
-There is my releases:
-Thresh - Master of Hook
-Lee Sin - Master of Insec
-Amumu - Master of Sadness
+There are my releases:
+Master of Hook, Master of Insec, Master of Sadness
