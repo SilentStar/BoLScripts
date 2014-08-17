@@ -2,7 +2,7 @@ if myHero.charName ~= "Thresh" then return end
 
 if not VIP_USER then return PrintChat("Thresh - Master of Hook - You're not a VIP USER.") end
 
-local version = "1.0"
+local version = "1.1"
 local AUTOUPDATE = true
 
 
@@ -71,7 +71,7 @@ GapCloserList = {
         ['Khazix']      = {true, spell = 'KhazixW'},
         ['Leblanc']     = {true, spell = 'LeblancSlide'},
         ['LeeSin']      = {true, spell = 'blindmonkqtwo'},
-        ['Leona']       = {true, spell = 'LeonaZenithBlade'},
+        ['Leona']       = {true, spell = 'LeonaZenithBlade', range = 900,      projSpeed = 2000},
         ['Lucian']      = {true, spell = 'LucianE'},
         ['Malphite']    = {true, spell = 'UFSlash'},
         ['Maokai']      = {true, spell = 'MaokaiTrunkLine',}, -- Targeted ability 
@@ -423,6 +423,10 @@ function OnTick()
 			if CastQ2() then
 				CastQ2()
 			end
+		end
+
+		if ValidTarget(Target, Ranges.AA) then
+			myHero:Attack(Target)
 		end
 	end
 
@@ -804,6 +808,11 @@ function OnProcessSpell(unit, spell)
         if spell.target ~= nil and spell.target.name == myHero.name or GapCloserList[unit.charName].spell == 'blindmonkqtwo' then
           local CastPosition, HitChance, Position = VP:GetLineCastPosition(unit, Skills.SkillE.delay, Skills.SkillE.width, Skills.SkillE.range, Skills.SkillE.speed, myHero) 
           CastSpell(_E, CastPosition.x, CastPosition.z)
+        elseif GapCloserList[unit.charName].spell == 'LeonaZenithBlade' then
+          local CastPosition, HitChance, Position = VP:GetLineCastPosition(unit, Skills.SkillE.delay, Skills.SkillE.width, Skills.SkillE.range, Skills.SkillE.speed, myHero) 
+          	if myHero:GetSpellData(_E).name == "ThreshE" then Etime = os.clock() end
+          	Etime = os.clock() + 2
+          	CastSpell(_E, CastPosition.x, CastPosition.z)
         end
       end
     end
