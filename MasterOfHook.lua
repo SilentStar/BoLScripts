@@ -2,7 +2,7 @@ if myHero.charName ~= "Thresh" then return end
 
 if not VIP_USER then return PrintChat("Thresh - Master of Hook - You're not a VIP USER.") end
 
-local version = "1.1"
+local version = "1.2"
 local AUTOUPDATE = true
 
 
@@ -169,6 +169,7 @@ function OnLoad()
 	MOHConfig.ComboSettings.QSpecial:addParam("DashMode", "Dash Feature", SCRIPT_PARAM_LIST, 2, {"On Dash", "After Dash"})
 	MOHConfig.ComboSettings.QSpecial:addParam("ImmobileMode", "Immobile Feature", SCRIPT_PARAM_LIST, 2, {"On Immobile", "After Immobile"})
 	MOHConfig.ComboSettings:addParam("UseQ", "Use Q in 'Combo'", SCRIPT_PARAM_ONOFF, true)
+	MOHConfig.ComboSettings:addParam("UseQ2", "Use Q2 in 'Combo'", SCRIPT_PARAM_ONKEYTOGGLE, true, GetKey("T"))
 	MOHConfig.ComboSettings:addParam("QMode", "Use Q Mode ", SCRIPT_PARAM_LIST, 1, {"Target Selector", "Selected Target"})
 	MOHConfig.ComboSettings:addParam("UseW", "Use Lantern in 'Combo'", SCRIPT_PARAM_ONOFF, true)
 	MOHConfig.ComboSettings:addParam("ThrowLantern", "Throw lantern to: ", SCRIPT_PARAM_LIST, 2, {"Selected Ally", "Nearest Ally"})
@@ -260,6 +261,7 @@ function OnLoad()
 	
 	-- Permashow Part --
 	MOHConfig.KeyBindings:permaShow("Combo")
+	MOHConfig.ComboSettings:permaShow("UseQ2")
 	MOHConfig.ComboSettings:permaShow("UseW")
 	MOHConfig.ComboSettings:permaShow("UseR")
 	MOHConfig.ComboSettings:permaShow("UseRcount")
@@ -282,6 +284,7 @@ end
 function OnTick()
 	CDHandler()
 	ts:update()
+	Orbwalker:EnableAttacks()
 	Target = ts.target
 
 	Skills.SkillQ.range = MOHConfig.ComboSettings.QSpecial.QSlider
@@ -320,6 +323,7 @@ function OnTick()
 	WREADY = (myHero:CanUseSpell(_W) == READY)
 	EREADY = (myHero:CanUseSpell(_E) == READY)
 	RREADY = (myHero:CanUseSpell(_R) == READY)
+	Ranges.AA = myHero.range
 
 	Skills.SkillQ.name = myHero:GetSpellData(_Q).name
 	Skills.SkillW.name = myHero:GetSpellData(_W).name
@@ -379,10 +383,6 @@ function OnTick()
 	end
 
 	if MOHConfig.KeyBindings.Combo then
-
-		if ValidTarget(Target, Ranges.AA) then
-			myHero:Attack(Target)
-		end
 		
 		if EREADY and MOHConfig.ComboSettings.UseE and ValidTarget(Target) and MOHConfig.ComboSettings.EMode == 1 then
 			CastE(Target)
@@ -413,7 +413,7 @@ function OnTick()
 				VPCastQ(target)
 			end
 
-			if CastQ2() then
+			if MOHConfig.ComboSettings.UseQ2 then
 				CastQ2()
 			end
 		end
@@ -425,7 +425,7 @@ function OnTick()
 				VPCastQ2(target)
 			end
 
-			if CastQ2() then
+			if MOHConfig.ComboSettings.UseQ2 then
 				CastQ2()
 			end
 		end
@@ -563,7 +563,7 @@ function VPCastQ2(target)
 end
 
 function CastQ(unit, pos)
-    if GetDistance(pos) < Skills.SkillQ.range and myHero:CanUseSpell(_Q) == READY then
+    if GetDistance(pos) < Skills.SkillQ.range and myHero:CanUseSpell(_Q) == READY and myHero:GetSpellData(_Q).name == "ThreshQ" then
         local pos, info = Prodiction.GetPrediction(unit, Skills.SkillQ.range, Skills.SkillQ.speed, Skills.SkillQ.delay, Skills.SkillQ.width)
     	if pos and not info.mCollision() then
 			CastSpell(_Q, pos.x, pos.z)
