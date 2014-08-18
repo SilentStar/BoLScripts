@@ -2,7 +2,7 @@ if myHero.charName ~= "Thresh" then return end
 
 if not VIP_USER then return PrintChat("Thresh - Master of Hook - You're not a VIP USER.") end
 
-local version = "1.2"
+local version = "1.3"
 local AUTOUPDATE = true
 
 
@@ -632,12 +632,14 @@ end
 --end
 
 function CastLantern(target)
-	if GetDistance(friendlyObj) < Skills.SkillW.range and WREADY then
-        CastSpell(_W, friendlyObj.x, friendlyObj.z)
-    elseif FindNearestAlly() and GetDistance(FindNearestAlly()) < Skills.SkillW.range and WREADY then
-    	CastSpell(_W, FindNearestAlly().x, FindNearestAlly().z)
-    --elseif FindFarthestAlly() and GetDistance(FindFarthestAlly()) < Skills.SkillW.range and WREADY then
-    --	CastSpell(_W, FindFarthestAlly().x, FindFarthestAlly().z)
+	if MOHConfig.ComboSettings.ThrowLantern == 1 and friendlyObj ~= nil then
+		if GetDistance(friendlyObj) < Skills.SkillW.range and WREADY then
+			CastSpell(_W, friendlyObj.x, friendlyObj.z)
+		end
+	elseif MOHConfig.ComboSettings.ThrowLantern == 2 then
+		if GetDistance(FindNearestAlly()) < Skills.SkillW.range and WREADY then
+			CastSpell(_W, FindNearestAlly().x, FindNearestAlly().z)
+		end
     end
 end
 
