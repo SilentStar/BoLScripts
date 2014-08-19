@@ -2,7 +2,7 @@ if myHero.charName ~= "Thresh" then return end
 
 if not VIP_USER then return PrintChat("Thresh - Master of Hook - You're not a VIP USER.") end
 
-local version = "1.3"
+local version = "1.4"
 local AUTOUPDATE = true
 
 
