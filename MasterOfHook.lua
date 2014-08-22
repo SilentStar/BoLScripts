@@ -6,7 +6,7 @@ local version = "1.5"
 local AUTOUPDATE = true
 
 
-local SCRIPT_NAME = GetCurrentEnv().FILE_NAME
+local SCRIPT_NAME = "MasterOfHook"
 local SOURCELIB_URL = "https://raw.github.com/TheRealSource/public/master/common/SourceLib.lua"
 local SOURCELIB_PATH = LIB_PATH.."SourceLib.lua"
 if FileExist(SOURCELIB_PATH) then
