@@ -2,7 +2,7 @@ if myHero.charName ~= "Thresh" then return end
 
 if not VIP_USER then return PrintChat("Thresh - Master of Hook - You're not a VIP USER.") end
 
-local version = "1.4"
+local version = "1.5"
 local AUTOUPDATE = true
 
 
@@ -228,6 +228,24 @@ function OnLoad()
 	MOHConfig.DrawSettings:addParam("DrawTarget", "Draw Selected Target", SCRIPT_PARAM_ONOFF, true)
 	MOHConfig.DrawSettings:addParam("DrawAlly", "Draw Selected Ally", SCRIPT_PARAM_ONOFF, true)
 
+	MOHConfig:addSubMenu("[MOH] Permashow Settings", "PSSettings")
+	MOHConfig.PSSettings:addParam("permashow", "Enable/Disable ALL", SCRIPT_PARAM_ONOFF, true)
+	MOHConfig.PSSettings:addParam("permashow1", "Combo (Permashow)", SCRIPT_PARAM_ONOFF, true)
+	MOHConfig.PSSettings:addParam("permashow2", "Q2 Usage (Permashow)", SCRIPT_PARAM_ONOFF, true)
+	MOHConfig.PSSettings:addParam("permashow3", "Lantern Usage (Permashow)", SCRIPT_PARAM_ONOFF, true)
+	MOHConfig.PSSettings:addParam("permashow4", "Ultimate in Combo (Permashow)", SCRIPT_PARAM_ONOFF, true)
+	MOHConfig.PSSettings:addParam("permashow5", "Ultimate Enemy Count (Permashow)", SCRIPT_PARAM_ONOFF, true)
+	MOHConfig.PSSettings:addParam("permashow6", "Save Ally (Permashow)", SCRIPT_PARAM_ONOFF, true)
+	MOHConfig.PSSettings:addParam("permashow7", "Save Ally Count (Permashow)", SCRIPT_PARAM_ONOFF, true)
+	MOHConfig.PSSettings:addParam("permashow8", "CC Ally (Permashow)", SCRIPT_PARAM_ONOFF, true)
+	MOHConfig.PSSettings:addParam("permashow9", "Autobox Usage (Permashow)", SCRIPT_PARAM_ONOFF, true)
+	MOHConfig.PSSettings:addParam("permashow10", "Autobox Enemy Count (Permashow)", SCRIPT_PARAM_ONOFF, true)
+	MOHConfig.PSSettings:addParam("permashow11", "Gapcloser Usage (Permashow)", SCRIPT_PARAM_ONOFF, true)
+	MOHConfig.PSSettings:addParam("permashow12", "Interrupt Spells Usage (Permashow)", SCRIPT_PARAM_ONOFF, true)
+	MOHConfig.PSSettings:addParam("WarningSpace", "-------------------------------------------------------------------", 5, "")
+	MOHConfig.PSSettings:addParam("Warning", "Warning: All changes requires 'Reload'", 5, "")
+
+
 	MOHConfig:addParam("Space","", 5, "")
 	MOHConfig:addParam("Author","Author: SilentStar", 5, "")
 	MOHConfig:addParam("Version","Version: "..version.."", 5, "")
@@ -272,18 +290,18 @@ function OnLoad()
 	Orbwalker:LoadToMenu(MOHConfig.SOWorb)
 	
 	-- Permashow Part --
-	MOHConfig.KeyBindings:permaShow("Combo")
-	MOHConfig.ComboSettings:permaShow("UseQ2")
-	MOHConfig.ComboSettings:permaShow("UseW")
-	MOHConfig.ComboSettings:permaShow("UseR")
-	MOHConfig.ComboSettings:permaShow("UseRcount")
-	MOHConfig.LanternSettings:permaShow("SaveAlly")
-	MOHConfig.LanternSettings:permaShow("SaveAllyCount")
-	MOHConfig.LanternSettings:permaShow("CCAlly")
-	MOHConfig.ABSettings:permaShow("AutoBox")
-	MOHConfig.ABSettings:permaShow("AutoEnemyRange")
-	MOHConfig.SPSettings:permaShow("GapCloser")
-	MOHConfig.SPSettings:permaShow("Interrupt")
+	if MOHConfig.PSSettings.permashow and MOHConfig.PSSettings.permashow1 then MOHConfig.KeyBindings:permaShow("Combo") end
+	if MOHConfig.PSSettings.permashow and MOHConfig.PSSettings.permashow2 then MOHConfig.ComboSettings:permaShow("UseQ2") end
+	if MOHConfig.PSSettings.permashow and MOHConfig.PSSettings.permashow3 then MOHConfig.ComboSettings:permaShow("UseW") end
+	if MOHConfig.PSSettings.permashow and MOHConfig.PSSettings.permashow4 then MOHConfig.ComboSettings:permaShow("UseR") end
+	if MOHConfig.PSSettings.permashow and MOHConfig.PSSettings.permashow5 then MOHConfig.ComboSettings:permaShow("UseRcount") end
+	if MOHConfig.PSSettings.permashow and MOHConfig.PSSettings.permashow6 then MOHConfig.LanternSettings:permaShow("SaveAlly") end
+	if MOHConfig.PSSettings.permashow and MOHConfig.PSSettings.permashow7 then MOHConfig.LanternSettings:permaShow("SaveAllyCount") end
+	if MOHConfig.PSSettings.permashow and MOHConfig.PSSettings.permashow8 then MOHConfig.LanternSettings:permaShow("CCAlly") end
+	if MOHConfig.PSSettings.permashow and MOHConfig.PSSettings.permashow9 then MOHConfig.ABSettings:permaShow("AutoBox") end
+	if MOHConfig.PSSettings.permashow and MOHConfig.PSSettings.permashow10 then MOHConfig.ABSettings:permaShow("AutoEnemyRange") end
+	if MOHConfig.PSSettings.permashow and MOHConfig.PSSettings.permashow11 then MOHConfig.SPSettings:permaShow("GapCloser") end
+	if MOHConfig.PSSettings.permashow and MOHConfig.PSSettings.permashow12 then MOHConfig.SPSettings:permaShow("Interrupt") end
 
 	PrintChat("<font color = \"#FFFFFF\">[Thresh] </font><font color = \"#FF0000\">Master of Hook by </font><font color = \"#FFFFFF\">SilentStar</font>")
 	PrintChat("<font color = \"#FFFFFF\">[Thresh] </font><font color = \"#FF0000\">Version: </font><font color = \"#FFFFFF\">"..version.."</font> </font>")
@@ -560,14 +578,19 @@ function VPCastQ(target)
 end
 
 function VPCastQ2(target)
-	for i, target in pairs(targetObj) do
-		if ValidTarget(target) then
-			if MOHConfig.PredSettings.SelectPrediction == 2 then
-				local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(target, Skills.SkillQ.delay, Skills.SkillQ.width, Skills.SkillQ.range, Skills.SkillQ.speed, myHero, true)
-            	if HitChance >= MOHConfig.HCSettings.HitChanceQ and GetDistance(CastPosition) < 1050 then
-					if QREADY and GetDistance(CastPosition, myHero) < 1050 and myHero:GetSpellData(_Q).name == "ThreshQ" and ValidTarget(Target, Skills.SkillQ.range) then
-                    		CastSpell(_Q, CastPosition.x, CastPosition.z)
-					end
+	local target = GetTarget()
+		if target ~= nil then
+			if string.find(target.type, "Hero") and target.team ~= myHero.team then
+				targetObj = target
+			end
+		end
+
+	if ValidTarget(target) then
+		if MOHConfig.PredSettings.SelectPrediction == 2 then
+			local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(target, Skills.SkillQ.delay, Skills.SkillQ.width, Skills.SkillQ.range, Skills.SkillQ.speed, myHero, true)
+            if HitChance >= MOHConfig.HCSettings.HitChanceQ and GetDistance(CastPosition) < 1050 then
+				if QREADY and GetDistance(CastPosition, myHero) < 1050 and myHero:GetSpellData(_Q).name == "ThreshQ" and ValidTarget(target, Skills.SkillQ.range) then
+                   		CastSpell(_Q, CastPosition.x, CastPosition.z)
 				end
 			end
 		end
