@@ -1,6 +1,6 @@
 if myHero.charName ~= "TwistedFate" then return end
 
-local version = "1.1"
+local version = "1.2"
 local AUTOUPDATE = true
 
 local SCRIPT_NAME = "The Pokerman"
@@ -294,9 +294,16 @@ function OnTick()
 			end
 		end
 
-		if QREADY and Target and GetDistance(Target, myHero) then
+		if QREADY and Target and GetDistance(Target, myHero) and TargetHaveBuff("stun", Target) then
 			local AOECastPosition, MainTargetHitChance, nTargets = VP:GetLineAOECastPosition(Target, 0, 80, 600, 2000, myHero)
 				if nTargets >= 1 then
+					if GetDistance(Target, myHero) <= Skills.SkillQ.range then
+						CastSpell(_Q, Target.x, Target.z)
+					end
+				end
+		elseif QREADY and Target and GetDistance(Target, myHero) then
+			local AOECastPosition, MainTargetHitChance, nTargets = VP:GetLineAOECastPosition(Target, 0, 80, 600, 2000, myHero)
+				if nTargets >= 1 and MainTargetHitChance >= 4 then
 					if GetDistance(Target, myHero) <= Skills.SkillQ.range then
 						CastSpell(_Q, Target.x, Target.z)
 					end
