@@ -1,6 +1,6 @@
 if myHero.charName ~= "TwistedFate" then return end
 
-local version = "1.2"
+local version = "1.3"
 local AUTOUPDATE = true
 
 local SCRIPT_NAME = "The Pokerman"
@@ -138,7 +138,7 @@ function OnLoad()
 
 	TPMConfig:addSubMenu("[TPM] Ultimate Settings", "UltSettings")
 	TPMConfig.UltSettings:addParam("AutoSelect", "Auto Pick Card when casting ultimate", SCRIPT_PARAM_ONOFF, true)
-	TPMConfig.UltSettings:addParam("SelectCard", "Select card", SCRIPT_PARAM_LIST, 1, {"Gold", "Red", "Blue"})
+	TPMConfig.UltSettings:addParam("SelectCard", "Select Card", SCRIPT_PARAM_LIST, 1, {"Gold", "Red", "Blue"})
 
 	TPMConfig:addSubMenu("[TPM] Killsteal Settings", "KSSettings")
 	TPMConfig.KSSettings:addParam("KSIgnite", "Killsteal with Ignite", SCRIPT_PARAM_ONOFF, true)
@@ -303,12 +303,14 @@ function OnTick()
 				end
 		elseif QREADY and Target and GetDistance(Target, myHero) then
 			local AOECastPosition, MainTargetHitChance, nTargets = VP:GetLineAOECastPosition(Target, 0, 80, 600, 2000, myHero)
-				if nTargets >= 1 and MainTargetHitChance >= 4 then
+				if nTargets >= 1 and MainTargetHitChance >= 3 then
 					if GetDistance(Target, myHero) <= Skills.SkillQ.range then
 						CastSpell(_Q, Target.x, Target.z)
 					end
 				end
 		end
+
+
 
 	end
 
@@ -316,7 +318,7 @@ function OnTick()
 			if QREADY and TPMConfig.HarassSettings.UseQ then
 				if Target and GetDistance(Target, myHero) then
 					local AOECastPosition, MainTargetHitChance, nTargets = VP:GetLineAOECastPosition(Target, 0, 80, 600, 2000, myHero)
-					if nTargets >= 1 then
+					if nTargets >= 1 and MainTargetHitChance >= 2 then
 						if GetDistance(Target, myHero) <= Skills.SkillQ.range then
 							CastSpell(_Q, Target.x, Target.z)
 						end
@@ -351,7 +353,7 @@ function OnTick()
 			if QREADY and TPMConfig.HarassSettings.AutoQ and Target then
 				if GetDistance(Target, myHero) then
 					local AOECastPosition, MainTargetHitChance, nTargets = VP:GetLineAOECastPosition(Target, 0, 80, 600, 2000, myHero)
-					if nTargets >= 1 then
+					if nTargets >= 1 and MainTargetHitChance >= 2 then
 						if GetDistance(Target, myHero) <= Skills.SkillQ.range then
 							CastSpell(_Q, Target.x, Target.z)
 						end
@@ -647,17 +649,17 @@ function OnProcessSpell(unit, spell)
 		elseif spell.name == "gate" then 
 			CastingUltimate = false
 			if WREADY and TPMConfig.UltSettings.AutoSelect then
-				if TPMConfig.UltSettings.SelectCard == 1 and myHero:GetSpellData(_W).name == "PickACard" and GetTickCount()-lastUse2 >= 2400 and GetTickCount()-lastUse >= 500 then
-					selected = "goldcardlock"
+				if myHero:GetSpellData(_W).name == "PickACard" and GetTickCount()-lastUse2 >= 2400 and GetTickCount()-lastUse >= 500 then
+					if TPMConfig.UltSettings.SelectCard == 1 then
+						selected = "goldcardlock"
 						CastSpell(_W)
-					lastUse = GetTickCount()
-				elseif TPMConfig.UltSettings.SelectCard == 2 and myHero:GetSpellData(_W).name == "PickACard" and GetTickCount()-lastUse2 >= 2400 and GetTickCount()-lastUse >= 500 then
-					selected = "redcardlock"
+					elseif TPMConfig.UltSettings.SelectCard == 2 then
+						selected = "redcardlock"
 						CastSpell(_W)
-					lastUse = GetTickCount()
-				elseif TPMConfig.UltSettings.SelectCard == 3 and myHero:GetSpellData(_W).name == "PickACard" and GetTickCount()-lastUse2 >= 2400 and GetTickCount()-lastUse >= 500 then
-					selected = "bluecardlock"
+					elseif TPMConfig.UltSettings.SelectCard == 3 then
+						selected = "bluecardlock"
 						CastSpell(_W)
+					end
 					lastUse = GetTickCount()
 				end
 			end
