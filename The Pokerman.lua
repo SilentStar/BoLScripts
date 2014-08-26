@@ -1,6 +1,6 @@
 if myHero.charName ~= "TwistedFate" then return end
 
-local version = "1.0"
+local version = "1.1"
 local AUTOUPDATE = true
 
 local SCRIPT_NAME = "The Pokerman"
@@ -57,7 +57,7 @@ local LastSkin = 0
 targetMinions = minionManager(MINION_ENEMY, 1000, myHero, MINION_SORT_MAXHEALTH_DEC)
 jungleMinions = minionManager(MINION_JUNGLE, 1000, myHero, MINION_SORT_MAXHEALTH_DEC)
 
-local SelectedTarget = nil
+local CastingUltimate = false
 
 local range = 1350
 
@@ -135,6 +135,10 @@ function OnLoad()
 	TPMConfig:addSubMenu("[TPM] Special Settings", "SPSettings")
 	TPMConfig.SPSettings:addParam("PingKillable", "Ping killable enemies", SCRIPT_PARAM_ONOFF, true)
 	TPMConfig.SPSettings:addParam("KillableRange", "Ping range", SCRIPT_PARAM_SLICE, 9000, 2000, 10000, 0)
+
+	TPMConfig:addSubMenu("[TPM] Ultimate Settings", "UltSettings")
+	TPMConfig.UltSettings:addParam("AutoSelect", "Auto Pick Card when casting ultimate", SCRIPT_PARAM_ONOFF, true)
+	TPMConfig.UltSettings:addParam("SelectCard", "Select card", SCRIPT_PARAM_LIST, 1, {"Gold", "Red", "Blue"})
 
 	TPMConfig:addSubMenu("[TPM] Killsteal Settings", "KSSettings")
 	TPMConfig.KSSettings:addParam("KSIgnite", "Killsteal with Ignite", SCRIPT_PARAM_ONOFF, true)
@@ -622,6 +626,31 @@ function Jungleclear()
 					if GetDistance(jungleMinion, myHero) <= 800 then
 						CastSpell(_W, jungleMinion.x, jungleMinion.z)
 					end
+					lastUse = GetTickCount()
+				end
+			end
+		end
+	end
+end
+
+function OnProcessSpell(unit, spell)
+	if unit.isMe then
+		if spell.name == "destiny" then
+			CastingUltimate = true
+		elseif spell.name == "gate" then 
+			CastingUltimate = false
+			if WREADY and TPMConfig.UltSettings.AutoSelect then
+				if TPMConfig.UltSettings.SelectCard == 1 and myHero:GetSpellData(_W).name == "PickACard" and GetTickCount()-lastUse2 >= 2400 and GetTickCount()-lastUse >= 500 then
+					selected = "goldcardlock"
+						CastSpell(_W)
+					lastUse = GetTickCount()
+				elseif TPMConfig.UltSettings.SelectCard == 2 and myHero:GetSpellData(_W).name == "PickACard" and GetTickCount()-lastUse2 >= 2400 and GetTickCount()-lastUse >= 500 then
+					selected = "redcardlock"
+						CastSpell(_W)
+					lastUse = GetTickCount()
+				elseif TPMConfig.UltSettings.SelectCard == 3 and myHero:GetSpellData(_W).name == "PickACard" and GetTickCount()-lastUse2 >= 2400 and GetTickCount()-lastUse >= 500 then
+					selected = "bluecardlock"
+						CastSpell(_W)
 					lastUse = GetTickCount()
 				end
 			end
