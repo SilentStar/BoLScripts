@@ -1,6 +1,6 @@
 if myHero.charName ~= "LeeSin" then return end
 
-local version = "3.0"
+local version = "3.1"
 local AUTOUPDATE = true
 
 
@@ -70,9 +70,9 @@ local Passive = {ready = false, stacks = 0}
 
 local lastSkin = 0
 
-if myHero:GetSpellData(SUMMONER_1).name:find("SummonerFlash") then 
+if myHero:GetSpellData(SUMMONER_1).name:find("summonerflash") then 
 		flash = SUMMONER_1
-	elseif myHero:GetSpellData(SUMMONER_2).name:find("SummonerFlash") then 
+	elseif myHero:GetSpellData(SUMMONER_2).name:find("summonerflash") then 
 		flash = SUMMONER_2
 	else 
 		flash = nil
@@ -84,13 +84,13 @@ function OnLoad()
 
 	Config = scriptConfig("Master of Insec", "LeeSinCombo")
 	
-	Config:addParam("scriptActive", "Combo", SCRIPT_PARAM_ONKEYDOWN, false, 32)
-	Config:addParam("starActive", "Star Combo", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("X"))
-	Config:addParam("insecMake", "Insec", SCRIPT_PARAM_ONKEYDOWN, false, 84)
-	Config:addParam("harass", "Harass", SCRIPT_PARAM_ONKEYDOWN, false, 71)
-	Config:addParam("wardJump", "Ward Jump", SCRIPT_PARAM_ONKEYDOWN, false, 67)
+	Config:addParam("scriptActive", "[MOI] Combo", SCRIPT_PARAM_ONKEYDOWN, false, 32)
+	Config:addParam("starActive", "[MOI] Star Combo", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("X"))
+	Config:addParam("insecMake", "[MOI] Insec", SCRIPT_PARAM_ONKEYDOWN, false, 84)
+	Config:addParam("harass", "[MOI] Harass", SCRIPT_PARAM_ONKEYDOWN, false, 71)
+	Config:addParam("wardJump", "[MOI] Ward Jump", SCRIPT_PARAM_ONKEYDOWN, false, 67)
 	
-	Config:addSubMenu("Combo Settings", "csettings")
+	Config:addSubMenu("[MOI] Combo Settings", "csettings")
 	Config.csettings:addParam("qslider", "Set Q Range", SCRIPT_PARAM_SLICE, 1000, 50, 1100, 0)
 	Config.csettings:addParam("qusage", "Use Q in combo", SCRIPT_PARAM_ONOFF, true)
 	Config.csettings:addParam("wusage", "Use W in combo", SCRIPT_PARAM_ONOFF, false)
@@ -98,44 +98,51 @@ function OnLoad()
 	Config.csettings:addParam("eusage", "Use E in combo", SCRIPT_PARAM_ONOFF, true)
 	Config.csettings:addParam("rusage", "Use R to finish the enemy", SCRIPT_PARAM_ONOFF, true)
 	
-	Config:addSubMenu("Draw Settings", "DrawSettings")
-	Config.DrawSettings:addParam("drawInsec", "Draw InSec Line", SCRIPT_PARAM_ONOFF, true)
+	Config:addSubMenu("[MOI] Draw Settings", "DrawSettings")
+	Config.DrawSettings:addParam("drawInsec", "Draw Insec Line", SCRIPT_PARAM_ONOFF, true)
+	Config.DrawSettings:addParam("drawKillable", "Draw Killable Text", SCRIPT_PARAM_ONOFF, true)
 	Config.DrawSettings:addParam("DrawQ", "Draw Q Range", SCRIPT_PARAM_ONOFF, true)
 	Config.DrawSettings:addParam("DrawW", "Draw W Range", SCRIPT_PARAM_ONOFF, true)
 	Config.DrawSettings:addParam("DrawE", "Draw E Range", SCRIPT_PARAM_ONOFF, true)
 	Config.DrawSettings:addParam("DrawR", "Draw R Range", SCRIPT_PARAM_ONOFF, true)
 	
-	Config:addSubMenu("Misc Settings", "miscs")
-	Config.miscs:addParam("wardJumpmax", "Ward Jump on max range if mouse too far", SCRIPT_PARAM_ONOFF, true)
-	Config.miscs:addParam("predInSec", "Use prediction for InSec", SCRIPT_PARAM_ONOFF, false)
+	Config:addSubMenu("[MOI] Misc Settings", "miscs")
+	Config.miscs:addParam("wardJumpmax", "Wardjump on max range (If mouse too far)", SCRIPT_PARAM_ONOFF, true)
+	Config.miscs:addParam("predInSec", "Use prediction for insec", SCRIPT_PARAM_ONOFF, false)
 	Config.miscs:addParam("following", "Follow while combo", SCRIPT_PARAM_ONOFF, true)
 	
-	Config:addSubMenu("Insec Settings", "insettings")
+	Config:addSubMenu("[MOI] Insec Settings", "insettings")
 	Config.insettings:addParam("insecMode", "Insec Mode", SCRIPT_PARAM_LIST, 1, {"Nearest Ally", "Selected Ally"})
 	Config.insettings:addParam("igCol","Ignore collision for insec", SCRIPT_PARAM_ONOFF, true)
-	Config.insettings:addParam("wjump","Ward Jump Insec", SCRIPT_PARAM_ONOFF, true)
-	Config.insettings:addParam("wflash","Use Flash if W on CD", SCRIPT_PARAM_ONOFF, true)
-	Config.insettings:addParam("pflash","Prioritize flash over ward jump", SCRIPT_PARAM_ONOFF, false)
+	Config.insettings:addParam("wjump","Wardjump Insec", SCRIPT_PARAM_ONOFF, true)
+	Config.insettings:addParam("wflash","Use flash if w on cooldown", SCRIPT_PARAM_ONOFF, true)
+	Config.insettings:addParam("pflash","Prioritize flash (disable wardjump)", SCRIPT_PARAM_ONOFF, false)
 	
-	Config:addSubMenu("Ultimate Settings", "useUlt")
+	Config:addSubMenu("[MOI] Ultimate Settings", "useUlt")
 	
-	Config:addSubMenu("Laneclear", "Laneclear")
+	Config:addSubMenu("[MOI] Laneclear", "Laneclear")
 	Config.Laneclear:addParam("lclr", "Laneclear Key", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("M"))
 	Config.Laneclear:addParam("useClearQ", "Use Q in Laneclear", SCRIPT_PARAM_ONOFF, true)
 	Config.Laneclear:addParam("useClearW", "Use W in Laneclear", SCRIPT_PARAM_ONOFF, false)
 	Config.Laneclear:addParam("useClearE", "Use E in Laneclear", SCRIPT_PARAM_ONOFF, true)
 
-	Config:addSubMenu("Jungleclear", "Jungleclear")
+	Config:addSubMenu("[MOI] Jungleclear", "Jungleclear")
 	Config.Jungleclear:addParam("jclr", "Jungleclear Key", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("M"))
 	Config.Jungleclear:addParam("useClearQ", "Use Q in Jungleclear", SCRIPT_PARAM_ONOFF, true)
 	Config.Jungleclear:addParam("useClearW", "Use W in Jungleclear", SCRIPT_PARAM_ONOFF, true)
 	Config.Jungleclear:addParam("useClearE", "Use E in Jungleclear", SCRIPT_PARAM_ONOFF, true)
 	
-	Config:addSubMenu("Additionals", "Ads")
+	Config:addSubMenu("[MOI] Additionals", "Ads")
 	Config.Ads:addSubMenu("Skin Changer (VIP)", "VIP")
 	Config.Ads.VIP:addParam("skin", "Use custom skin", SCRIPT_PARAM_ONOFF, false)
 	Config.Ads.VIP:addParam("skin1", "Skin changer", SCRIPT_PARAM_SLICE, 1, 1, 7)
 	Config.Ads:addParam("prodiction", "Use Prodiction", SCRIPT_PARAM_ONOFF, false)
+
+	Config:addSubMenu("[MOI] Target Selector", "TSSettings")
+
+	Config:addParam("Space","", 5, "")
+	Config:addParam("Author","Author: SilentStar", 5, "")
+	Config:addParam("Version","Version: "..version.."", 5, "")
 	
 	for i=1, heroManager.iCount do
 		local enemy = heroManager:GetHero(i)
@@ -150,8 +157,8 @@ function OnLoad()
 	end
 	
 	ts = TargetSelector(TARGET_NEAR_MOUSE, 1000, DAMAGE_PHYSICAL)
-	ts.name = "Lee Sin"
-	Config:addTS(ts)
+	ts.name = "Focus"
+	Config.TSSettings:addTS(ts)
 	
 	VP = VPrediction()
 	
@@ -164,7 +171,7 @@ function OnLoad()
 	Config:permaShow("wardJump")
 	
 	
-	Config:addSubMenu("Orbwalker", "SOWorb")
+	Config:addSubMenu("[MOI] Orbwalker", "SOWorb")
 	Orbwalker:LoadToMenu(Config.SOWorb)
 	
 	targetMinions = minionManager(MINION_ENEMY, 1000, myHero, MINION_SORT_MAXHEALTH_DEC)
@@ -1329,7 +1336,7 @@ function OnDraw()
                                 tempHealth = tempHealth - myHero:CalcDamage(enemy, (qDmgs[spellQ.level] + bonusDmg + ((enemy.maxHealth - tempHealth) * 0.08)))
                         end
                        
-                        if tempHealth < 0 then
+                        if tempHealth < 0 and Config.DrawSettings.drawKillable then
                                 DrawText3D(tostring("Kill him"), enemy.x, enemy.y, enemy.z, 20, RGB(222, 245, 15), true)
                         end
                 end
