@@ -1,6 +1,6 @@
 if myHero.charName ~= "TwistedFate" then return end
 
-local version = "1.3"
+local version = "1.4"
 local AUTOUPDATE = true
 
 local SCRIPT_NAME = "The Pokerman"
@@ -22,8 +22,6 @@ end
 local RequireI = Require("SourceLib")
 RequireI:Add("VPrediction", "https://raw.github.com/Hellsing/BoL/master/common/VPrediction.lua")
 RequireI:Add("SOW", "https://raw.github.com/Hellsing/BoL/master/common/SOW.lua")
-
-require 'Selector'
 
 RequireI:Check()
 
@@ -59,8 +57,6 @@ jungleMinions = minionManager(MINION_JUNGLE, 1000, myHero, MINION_SORT_MAXHEALTH
 
 local CastingUltimate = false
 
-local range = 1350
-
 -- Spell damages --
 
 local QDamage = {60, 110, 160, 210, 260}
@@ -85,7 +81,25 @@ local selected = "goldcardlock"
 local lastUse = 0
 local lastUse2 = 0
 
+-- SAC-MMA Support --
+local isSAC = false
+local isMMA = false
+local Target = nil
+
+function GetCustomTarget()
+	ts:update()
+	if _G.MMA_Target and _G.MMA_Target.type == myHero.type then return _G.MMA_Target end
+	if _G.AutoCarry and _G.AutoCarry.Crosshair and _G.AutoCarry.Attack_Crosshair and _G.AutoCarry.Attack_Crosshair.target and _G.AutoCarry.Attack_Crosshair.target.type == myHero.type then return _G.AutoCarry.Attack_Crosshair.target end
+	return ts.target
+end
+
 function OnLoad()
+	if _G.ScriptLoaded then	return end
+	_G.ScriptLoaded = true
+	initComponents()
+end
+
+function initComponents()
 
 	UpdateWeb(true, ScriptName, id, HWID)
 
@@ -179,15 +193,15 @@ function OnLoad()
 	end
 
 	-- Target Selector Part --
-	Selector.Instance()
+	ts = TargetSelector(TARGET_LESS_CAST_PRIORITY, 1000)
+	ts.name = "Focus"
+	TPMConfig:addTS(ts)
 	
 	-- VPrediction Part --
 	VP = VPrediction()
 	
 	-- Orbwalker Part --
 	Orbwalker = SOW(VP)
-	TPMConfig:addSubMenu("[TPM] Orbwalker", "SOWorb")
-	Orbwalker:LoadToMenu(TPMConfig.SOWorb)
 
 	-- Ignite Check --
 
@@ -208,13 +222,35 @@ function OnLoad()
 
 	PrintChat("<font color = \"#FFFFFF\">[Twisted Fate] </font><font color = \"#FF0000\">The Pokerman </font><font color = \"#FFFFFF\">by SilentStar</font> </font>")
 	PrintChat("<font color = \"#FFFFFF\">[Twisted Fate] </font><font color = \"#FF0000\">Version: </font><font color = \"#FFFFFF\">"..version.."</font> </font>")
+
+	-- Orbwalker Check
+
+	DelayAction(function()
+		PrintChat("<font color = \"#FFFFFF\">[Twisted Fate] </font><font color = \"#FF0000\">Checking for external orbwalker: </font><font color = \"#FFFFFF\">Please wait...</font> </font>")
+		end, 2.5)
+
+	-- SAC-MMA Support
+	DelayAction(function()
+	if _G.MMA_Loaded ~= nil then
+		PrintChat("<font color = \"#FFFFFF\">[Twisted Fate] </font><font color = \"#FF0000\">MMA Status:</font> <font color = \"#FFFFFF\">Successfully integrated.</font> </font>")
+		isMMA = true
+	elseif _G.AutoCarry ~= nil then
+		PrintChat("<font color = \"#FFFFFF\">[Twisted Fate] </font><font color = \"#FF0000\">SAC Status:</font> <font color = \"#FFFFFF\">Successfully integrated.</font> </font>")
+		isSAC = true
+	elseif _G.AutoCarry == nil and _G.MMA_Loaded == nil then
+		PrintChat("<font color = \"#FFFFFF\">[Twisted Fate] </font><font color = \"#FF0000\">Orbwalker not found:</font> <font color = \"#FFFFFF\">SOW integrated.</font> </font>")
+		TPMConfig:addSubMenu("[TPM] Orbwalker", "SOWorb")
+		Orbwalker:LoadToMenu(TPMConfig.SOWorb)
+	end
+	end, 10)
+
 	PrintChat("<font color = \"#FFFFFF\">[Twisted Fate] </font><font color = \"#FF0000\">Successfully loaded.</font> </font>")
 
 end
 
 function OnTick()
 	
-	local Target = Selector.GetTarget(SelectorMenu.Get().mode, nil, {distance = range}) 
+	local Target = GetCustomTarget()
 
 	DFG, SHEEN, LICH = GetInventorySlotItem(3128) and GetInventorySlotItem(3128) or 0, GetInventorySlotItem(3057) and GetInventorySlotItem(3057) or 0, GetInventorySlotItem(3100) and GetInventorySlotItem(3100) or 0
 	Orbwalker:EnableAttacks()
@@ -243,7 +279,7 @@ function OnTick()
 	end
 
 	if TPMConfig.KeyBindings.Combo then
-		if WREADY and Target then
+		if WREADY and ValidTarget(Target) then
 			if TPMConfig.ComboSettings.SelectCard == 1 and myHero:GetSpellData(_W).name == "PickACard" and GetTickCount()-lastUse2 >= 2400 and GetTickCount()-lastUse >= 500 then
 				local AOECastPosition, MainTargetHitChance, nTargets = VP:GetCircularAOECastPosition(Target, 0, 80, 600, 2000, myHero)
 				if nTargets >= 2 then
@@ -294,14 +330,14 @@ function OnTick()
 			end
 		end
 
-		if QREADY and Target and GetDistance(Target, myHero) and TargetHaveBuff("stun", Target) then
+		if QREADY and ValidTarget(Target) and GetDistance(Target, myHero) and TargetHaveBuff("stun", Target) then
 			local AOECastPosition, MainTargetHitChance, nTargets = VP:GetLineAOECastPosition(Target, 0, 80, 600, 2000, myHero)
 				if nTargets >= 1 then
 					if GetDistance(Target, myHero) <= Skills.SkillQ.range then
 						CastSpell(_Q, Target.x, Target.z)
 					end
 				end
-		elseif QREADY and Target and GetDistance(Target, myHero) then
+		elseif QREADY and ValidTarget(Target) and GetDistance(Target, myHero) then
 			local AOECastPosition, MainTargetHitChance, nTargets = VP:GetLineAOECastPosition(Target, 0, 80, 600, 2000, myHero)
 				if nTargets >= 1 and MainTargetHitChance >= 3 then
 					if GetDistance(Target, myHero) <= Skills.SkillQ.range then
@@ -316,7 +352,7 @@ function OnTick()
 
 		if TPMConfig.KeyBindings.Harass then
 			if QREADY and TPMConfig.HarassSettings.UseQ then
-				if Target and GetDistance(Target, myHero) then
+				if ValidTarget(Target) and GetDistance(Target, myHero) then
 					local AOECastPosition, MainTargetHitChance, nTargets = VP:GetLineAOECastPosition(Target, 0, 80, 600, 2000, myHero)
 					if nTargets >= 1 and MainTargetHitChance >= 2 then
 						if GetDistance(Target, myHero) <= Skills.SkillQ.range then
@@ -326,7 +362,7 @@ function OnTick()
 				end
 			end
 
-			if WREADY and TPMConfig.HarassSettings.UseW and Target then
+			if WREADY and TPMConfig.HarassSettings.UseW and ValidTarget(Target) then
 				if TPMConfig.HarassSettings.HarassOnly == 1 and myHero:GetSpellData(_W).name == "PickACard" and GetTickCount()-lastUse2 >= 2400 and GetTickCount()-lastUse >= 500 then
 					selected = "goldcardlock"
 					if GetDistance(Target, myHero) <= 800 then
@@ -350,7 +386,7 @@ function OnTick()
 		end
 
 		if TPMConfig.HarassSettings.AutoHarass then
-			if QREADY and TPMConfig.HarassSettings.AutoQ and Target then
+			if QREADY and TPMConfig.HarassSettings.AutoQ and ValidTarget(Target) then
 				if GetDistance(Target, myHero) then
 					local AOECastPosition, MainTargetHitChance, nTargets = VP:GetLineAOECastPosition(Target, 0, 80, 600, 2000, myHero)
 					if nTargets >= 1 and MainTargetHitChance >= 2 then
@@ -361,7 +397,7 @@ function OnTick()
 				end
 			end
 
-			if WREADY and TPMConfig.HarassSettings.AutoW and Target then
+			if WREADY and TPMConfig.HarassSettings.AutoW and ValidTarget(Target) then
 				if TPMConfig.HarassSettings.AutoWselect == 1 and myHero:GetSpellData(_W).name == "PickACard" and GetTickCount()-lastUse2 >= 2400 and GetTickCount()-lastUse >= 500 then
 					selected = "goldcardlock"
 					if GetDistance(Target, myHero) <= 800 then
@@ -385,19 +421,19 @@ function OnTick()
 		end
 
 		-- Usages --
-		if Target then
+		if ValidTarget(Target) then
 			if TPMConfig.KSSettings.KSIgnite then
 				AutoIgnite(Target)
 			end
 		end
 
-		if Target then
+		if ValidTarget(Target) then
 			if TPMConfig.KSSettings.KSQ then
 				AutoQKS(Target)
 			end
 		end
 
-		if Target then
+		if ValidTarget(Target) then
 			if TPMConfig.KSSettings.KSDFG then
 				AutoDFGKS(Target)
 			end
@@ -525,7 +561,7 @@ function AutoQKS(Target)
 	if Target.health <= getDmg("Q", Target, myHero) and GetDistance(Target) <= Skills.SkillQ.range then
 		if QREADY then 
 			local AOECastPosition, MainTargetHitChance, nTargets = VP:GetLineAOECastPosition(Target, 0, 80, 600, 2000, myHero)
-			if nTargets >= 1 then
+			if nTargets >= 1 and MainTargetHitChance >= 2 then
 				if GetDistance(Target, myHero) <= Skills.SkillQ.range then
 					CastSpell(_Q, Target.x, Target.z)
 				end
