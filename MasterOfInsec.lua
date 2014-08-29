@@ -1,6 +1,6 @@
 if myHero.charName ~= "LeeSin" then return end
 
-local version = "3.1"
+local version = "3.2"
 local AUTOUPDATE = true
 
 
@@ -77,6 +77,18 @@ if myHero:GetSpellData(SUMMONER_1).name:find("summonerflash") then
 	else 
 		flash = nil
 	end
+
+if myHero:GetSpellData(SUMMONER_1).name:find("summonersmite") then
+		smiteSlot = SUMMONER_1
+	elseif myHero:GetSpellData(SUMMONER_2).name:find("summonersmite") then
+  		smiteSlot = SUMMONER_2
+  	else
+  		smiteSlot = nil
+  	end
+
+if smiteSlot then 
+	Smiteison = true
+end
 
 function OnLoad()
 
@@ -450,7 +462,7 @@ function insec()
 					targetObj2 = targetObj
 					end
 					
-					local wardDistance = 300
+					local wardDistance = 275
 					local dPredict = GetDistance(targetObj2, friendlyObj)
 					local xE = friendlyObj.x + ((dPredict + wardDistance) / dPredict) * (targetObj2.x - friendlyObj.x)
 					local zE = friendlyObj.z + ((dPredict + wardDistance) / dPredict) * (targetObj2.z - friendlyObj.z)
@@ -468,7 +480,19 @@ function insec()
 	end
 
 	if Config.insettings.insecMode == 1 then
-		if myHero:CanUseSpell(_R) == READY and targetObj ~= nil and targetObj.valid and ValidTarget(targetObj) then
+
+        for i=1, heroManager.iCount do
+                Ally = heroManager:GetHero(i)
+                if Ally.team == myHero.team and not Ally.dead and Ally.charName ~= myHero.charName then
+                        if NearestAlly == nil then
+                                NearestAlly = Ally
+                        elseif GetDistance(Ally) < GetDistance(NearestAlly) then
+                                NearestAlly = Ally
+                        end
+                end
+        end
+
+		if myHero:CanUseSpell(_R) == READY and NearestAlly ~= nil and targetObj ~= nil and NearestAlly.valid and targetObj.valid and ValidTarget(targetObj) then
 			if myHero:GetDistance(targetObj) < 375 then
 				local dPredict = GetDistance(targetObj, myHero)
 			
@@ -479,7 +503,7 @@ function insec()
 				positiona.x = xE
 				positiona.z = zE
 			
-				local newDistance = GetDistance(FindNearestAlly(), targetObj) - GetDistance(FindNearestAlly(), positiona)
+				local newDistance = GetDistance(NearestAlly, targetObj) - GetDistance(NearestAlly, positiona)
 				if newDistance > 0 and (newDistance / 500) > 0.7 then
 					CastSpell(_R, targetObj)
 					return true
@@ -501,10 +525,10 @@ function insec()
 						targetObj2 = targetObj
 					end
 				
-					local wardDistance = 300
-					local dPredict = GetDistance(targetObj2, FindNearestAlly())
-					local xE = FindNearestAlly().x + ((dPredict + wardDistance) / dPredict) * (targetObj2.x - FindNearestAlly().x)
-					local zE = FindNearestAlly().z + ((dPredict + wardDistance) / dPredict) * (targetObj2.z - FindNearestAlly().z)
+					local wardDistance = 275
+					local dPredict = GetDistance(targetObj2, NearestAlly)
+					local xE = NearestAlly.x + ((dPredict + wardDistance) / dPredict) * (targetObj2.x - NearestAlly.x)
+					local zE = NearestAlly.z + ((dPredict + wardDistance) / dPredict) * (targetObj2.z - NearestAlly.z)
 					
 					local positiona = {}
 					positiona.x = xE
@@ -574,7 +598,19 @@ function pinsec()
 	end
 
 	if Config.insettings.insecMode == 1 then
-		if myHero:CanUseSpell(_R) == READY and targetObj ~= nil and targetObj.valid and ValidTarget(targetObj) then
+
+        for i=1, heroManager.iCount do
+                Ally = heroManager:GetHero(i)
+                if Ally.team == myHero.team and not Ally.dead and Ally.charName ~= myHero.charName then
+                        if NearestAlly == nil then
+                                NearestAlly = Ally
+                        elseif GetDistance(Ally) < GetDistance(NearestAlly) then
+                                NearestAlly = Ally
+                        end
+                end
+        end
+
+		if myHero:CanUseSpell(_R) == READY and NearestAlly ~= nil and targetObj ~= nil and NearestAlly.valid and targetObj.valid and ValidTarget(targetObj) then
 			if myHero:GetDistance(targetObj) < 375 then
 				local dPredict = GetDistance(targetObj, myHero)
 				
@@ -585,7 +621,7 @@ function pinsec()
 				positiona.x = xE
 				positiona.z = zE
 			
-				local newDistance = GetDistance(FindNearestAlly(), targetObj) - GetDistance(FindNearestAlly(), positiona)
+				local newDistance = GetDistance(NearestAlly, targetObj) - GetDistance(NearestAlly, positiona)
 				if newDistance > 0 and (newDistance / 500) > 0.7 then
 					CastSpell(_R, targetObj)
 					return true
@@ -608,9 +644,9 @@ function pinsec()
 					end
 				
 					local wardDistance = 400
-					local dPredict = GetDistance(targetObj2, FindNearestAlly())
-					local xE = FindNearestAlly().x + ((dPredict + wardDistance) / dPredict) * (targetObj2.x - FindNearestAlly().x)
-					local zE = FindNearestAlly().z + ((dPredict + wardDistance) / dPredict) * (targetObj2.z - FindNearestAlly().z)
+					local dPredict = GetDistance(targetObj2, NearestAlly)
+					local xE = NearestAlly.x + ((dPredict + wardDistance) / dPredict) * (targetObj2.x - NearestAlly.x)
+					local zE = NearestAlly.z + ((dPredict + wardDistance) / dPredict) * (targetObj2.z - NearestAlly.z)
 				
 					local positiona = {}
 					positiona.x = xE
@@ -680,7 +716,19 @@ function winsec()
 	end
 
 	if Config.insettings.insecMode == 1 then
-		if myHero:CanUseSpell(_R) == READY and targetObj ~= nil and targetObj.valid and ValidTarget(targetObj) then
+
+        for i=1, heroManager.iCount do
+                Ally = heroManager:GetHero(i)
+                if Ally.team == myHero.team and not Ally.dead and Ally.charName ~= myHero.charName then
+                        if NearestAlly == nil then
+                                NearestAlly = Ally
+                        elseif GetDistance(Ally) < GetDistance(NearestAlly) then
+                                NearestAlly = Ally
+                        end
+                end
+        end
+
+		if myHero:CanUseSpell(_R) == READY and NearestAlly ~= nil and targetObj ~= nil and NearestAlly.valid and targetObj.valid and ValidTarget(targetObj) then
 			if myHero:GetDistance(targetObj) < 375 then
 				local dPredict = GetDistance(targetObj, myHero)
 				
@@ -691,7 +739,7 @@ function winsec()
 				positiona.x = xE
 				positiona.z = zE
 			
-				local newDistance = GetDistance(FindNearestAlly(), targetObj) - GetDistance(FindNearestAlly(), positiona)
+				local newDistance = GetDistance(NearestAlly, targetObj) - GetDistance(NearestAlly, positiona)
 				if newDistance > 0 and (newDistance / 500) > 0.7 then
 					CastSpell(_R, targetObj)
 					return true
@@ -714,9 +762,9 @@ function winsec()
 					end
 				
 					local wardDistance = 400
-					local dPredict = GetDistance(targetObj2, FindNearestAlly())
-					local xE = FindNearestAlly().x + ((dPredict + wardDistance) / dPredict) * (targetObj2.x - FindNearestAlly().x)
-					local zE = FindNearestAlly().z + ((dPredict + wardDistance) / dPredict) * (targetObj2.z - FindNearestAlly().z)
+					local dPredict = GetDistance(targetObj2, NearestAlly)
+					local xE = NearestAlly.x + ((dPredict + wardDistance) / dPredict) * (targetObj2.x - NearestAlly.x)
+					local zE = NearestAlly.z + ((dPredict + wardDistance) / dPredict) * (targetObj2.z - NearestAlly.z)
 				
 					local positiona = {}
 					positiona.x = xE
@@ -800,11 +848,9 @@ function combo(inseca)
                         if myHero:GetSpellData(_Q).name == "BlindMonkQOne" then
 							if VIP_USER and Config.Ads.prodiction then
 								local pos, info = Prodiction.GetPrediction(focusEnemy, skills.SkillQ.range, skills.SkillQ.speed, skills.SkillQ.delay, skills.SkillQ.width)
-								if info.hitchance >= 2 and GetDistance(pos) <= 1000 and not Config.insettings.igCol then 
+								if info.hitchance >= 2 and GetDistance(pos) <= 1000 then 
 								ProdictQ:GetPredictionCallBack(focusEnemy, CastQ)
-								elseif info.hitchance >= 2 and GetDistance(pos) <= 1000 and Config.insettings.igCol then 
-								CastSpell(_Q, pos.x, pos.z)
-								elseif info.hitchance >= 2 and GetDistance(pos) <= 1000 and Config.insettings.igCol or not Config.insettings.igCol then
+								else
 								CastQ(focusEnemy)
 								end
 							else
@@ -1220,6 +1266,18 @@ function OnDraw()
                         end
                 end
         elseif RREADY and WREADY and Config.insettings.insecMode == 1 then
+
+        for i=1, heroManager.iCount do
+                Ally = heroManager:GetHero(i)
+                if Ally.team == myHero.team and not Ally.dead and Ally.charName ~= myHero.charName then
+                        if NearestAlly == nil then
+                                NearestAlly = Ally
+                        elseif GetDistance(Ally) < GetDistance(NearestAlly) then
+                                NearestAlly = Ally
+                        end
+                end
+        end
+
                 if useSight ~= nil then
                         local validTargets = 0
                         if targetObj ~= nil and targetObj.valid and ValidTarget(targetObj) then
@@ -1227,19 +1285,19 @@ function OnDraw()
                                 validTargets = validTargets + 1
                         end
                        
-                        if FindNearestAlly() ~= nil and FindNearestAlly().valid then
-                                DrawCircle(FindNearestAlly().x, FindNearestAlly().y, FindNearestAlly().z, 70, 0x00CC00)
+                        if NearestAlly ~= nil and NearestAlly.valid then
+                                DrawCircle(NearestAlly.x, NearestAlly.y, NearestAlly.z, 70, 0x00CC00)
                                 validTargets = validTargets + 1
                         end
                        
                         if validTargets == 2 and Config.DrawSettings.drawInsec then
-                                local dPredict = GetDistance(targetObj, FindNearestAlly())
+                                local dPredict = GetDistance(targetObj, NearestAlly)
                                 local rangeR = 300
                                 if myHero:GetDistance(targetObj) <= 1000 then
                                         rangeR = 800
                                 end
-                                local xQ = targetObj.x + (rangeR / dPredict) * (FindNearestAlly().x - targetObj.x)
-                                local zQ = targetObj.z + (rangeR / dPredict) * (FindNearestAlly().z - targetObj.z)
+                                local xQ = targetObj.x + (rangeR / dPredict) * (NearestAlly.x - targetObj.x)
+                                local zQ = targetObj.z + (rangeR / dPredict) * (NearestAlly.z - targetObj.z)
                                
                                 local positiona = {}
                                 positiona.x = xQ
@@ -1280,6 +1338,18 @@ function OnDraw()
                         end
                 end
         elseif RREADY and FREADY and not WREADY and Config.insettings.insecMode == 1 then
+
+        for i=1, heroManager.iCount do
+                Ally = heroManager:GetHero(i)
+                if Ally.team == myHero.team and not Ally.dead and Ally.charName ~= myHero.charName then
+                        if NearestAlly == nil then
+                                NearestAlly = Ally
+                        elseif GetDistance(Ally) < GetDistance(NearestAlly) then
+                                NearestAlly = Ally
+                        end
+                end
+        end
+
                 if useSight ~= nil then
                         local validTargets = 0
                         if targetObj ~= nil and targetObj.valid and ValidTarget(targetObj) then
@@ -1287,19 +1357,19 @@ function OnDraw()
                                 validTargets = validTargets + 1
                         end
                        
-                        if FindNearestAlly() ~= nil and FindNearestAlly().valid then
-                                DrawCircle(FindNearestAlly().x, FindNearestAlly().y, FindNearestAlly().z, 70, 0x00CC00)
+                        if NearestAlly ~= nil and NearestAlly.valid then
+                                DrawCircle(NearestAlly.x, NearestAlly.y, NearestAlly.z, 70, 0x00CC00)
                                 validTargets = validTargets + 1
                         end
                        
                         if validTargets == 2 and Config.DrawSettings.drawInsec then
-                                local dPredict = GetDistance(targetObj, FindNearestAlly())
+                                local dPredict = GetDistance(targetObj, NearestAlly)
                                 local rangeR = 300
                                 if myHero:GetDistance(targetObj) <= 1000 then
                                         rangeR = 800
                                 end
-                                local xQ = targetObj.x + (rangeR / dPredict) * (FindNearestAlly().x - targetObj.x)
-                                local zQ = targetObj.z + (rangeR / dPredict) * (FindNearestAlly().z - targetObj.z)
+                                local xQ = targetObj.x + (rangeR / dPredict) * (NearestAlly.x - targetObj.x)
+                                local zQ = targetObj.z + (rangeR / dPredict) * (NearestAlly.z - targetObj.z)
                                
                                 local positiona = {}
                                 positiona.x = xQ
@@ -1428,13 +1498,33 @@ function JungleClear()
 	end
 end
 
-function CastQ(unit, focusEnemy, spell)
+--function CastQ(unit, focusEnemy, spell)
+--		ts:update()
+--		focusEnemy = ts.target
+--        if GetDistance(focusEnemy) - getHitBoxRadius(unit)/2 < skills.SkillQ.range then
+--            local willCollide = ProdictQCol:GetMinionCollision(focusEnemy, myHero)
+--            if not willCollide then
+--            	CastSpell(_Q, focusEnemy.x, focusEnemy.z)
+--            elseif willCollide == 1 then 
+--            	if myHero:CanUseSpell(smiteSlot) == READY and GetDistance(myHero, willCollide) < smiterange then
+--            		CastSpell(smiteSlot, willCollide.x, willcollide.z)
+--            		CastSpell(_Q, focusEnemy.x, focusEnemy.z)
+--            	end
+--            end
+--		end
+--end
+
+function CastQ(unit, focusEnemy)
 		ts:update()
 		focusEnemy = ts.target
-        if GetDistance(focusEnemy) - getHitBoxRadius(unit)/2 < skills.SkillQ.range then
-            local willCollide = ProdictQCol:GetMinionCollision(focusEnemy, myHero)
-            if not willCollide then CastSpell(_Q, focusEnemy.x, focusEnemy.z) end
+    if GetDistance(focusEnemy) < skills.SkillQ.range and myHero:CanUseSpell(_Q) == READY and myHero:GetSpellData(_Q).name == "BlindMonkQOne" then
+        local focusEnemy, info = Prodiction.GetPrediction(unit, skills.SkillQ.range, skills.SkillQ.speed, skills.SkillQ.delay, skills.SkillQ.width)
+    	if focusEnemy and info.hitchance ~= nil and not info.mCollision() and not Config.insettings.igCol then
+				CastSpell(_Q, focusEnemy.x, focusEnemy.z)
+    	elseif focusEnemy and info.hitchance ~= nil and info.mCollision() == 1 and Config.insettings.igCol then
+				CastSpell(_Q, focusEnemy.x, focusEnemy.z)
 		end
+    end
 end
 
 function OnGainBuff(unit, buff)
@@ -1469,22 +1559,6 @@ function OnLoseBuff(unit, buff)
 	if buff.source and buff.source.isMe and buff.name:lower():find("blindmonkqone") then
 		qTarget = nil
 	end
-end
-
-function FindNearestAlly()
-		local Ally = nil
-        local NearestAlly = nil
-        for i=1, heroManager.iCount do
-                Ally = heroManager:GetHero(i)
-                if Ally.team == myHero.team and not Ally.dead and Ally.charName ~= myHero.charName then
-                        if NearestAlly == nil then
-                                NearestAlly = Ally
-                        elseif GetDistance(Ally) < GetDistance(NearestAlly) then
-                                NearestAlly = Ally
-                        end
-                end
-        end
-	return NearestAlly
 end
 
 function OnBugsplat()
