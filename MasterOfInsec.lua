@@ -1,6 +1,6 @@
 if myHero.charName ~= "LeeSin" then return end
 
-local version = "3.2"
+local version = "3.3"
 local AUTOUPDATE = true
 
 
@@ -125,7 +125,7 @@ function OnLoad()
 	
 	Config:addSubMenu("[MOI] Insec Settings", "insettings")
 	Config.insettings:addParam("insecMode", "Insec Mode", SCRIPT_PARAM_LIST, 1, {"Nearest Ally", "Selected Ally"})
-	Config.insettings:addParam("igCol","Ignore collision for insec", SCRIPT_PARAM_ONOFF, true)
+	--Config.insettings:addParam("igCol","Ignore collision for insec", SCRIPT_PARAM_ONOFF, true)
 	Config.insettings:addParam("wjump","Wardjump Insec", SCRIPT_PARAM_ONOFF, true)
 	Config.insettings:addParam("wflash","Use flash if w on cooldown", SCRIPT_PARAM_ONOFF, true)
 	Config.insettings:addParam("pflash","Prioritize flash (disable wardjump)", SCRIPT_PARAM_ONOFF, false)
@@ -248,7 +248,7 @@ function OnTick()
 		if insec() then return end
 	end
 	
-	if Config.scriptActive and not Config.wflash and not Config.pflash and not Config.wjump then
+	if Config.scriptActive then
 		local inseca = nil
 		if not Config.insecMake then inseca = targetObj end
 		normalcombo()
@@ -320,24 +320,26 @@ function harass()
 	moveToCursor()
 	for i=1, heroManager.iCount do
 		local target = heroManager:GetHero(i)
-		if ValidTarget(target, 1000) then
+		if ValidTarget(target, skills.SkillQ.range) then
 			if myHero:CanUseSpell(_Q) == READY then
 				if myHero:GetSpellData(_Q).name == "BlindMonkQOne" then
 					if VIP_USER and Config.Ads.prodiction then
 								local pos, info = Prodiction.GetPrediction(target, skills.SkillQ.range, skills.SkillQ.speed, skills.SkillQ.delay, skills.SkillQ.width)
-								if info.hitchance >= 2 and GetDistance(pos) <= 1000 then
-								ProdictQ:GetPredictionCallBack(target, CastQ)
-								else
-								CastQ(focusEnemy)
+								if info.hitchance >= 2 and GetDistance(pos) <= skills.SkillQ.range then
+									ProdictQ:GetPredictionCallBack(target, CastQ)
+								elseif GetDistance(pos) <= skills.SkillQ.range then
+									CastQ(focusEnemy)
+								end
 					end
 				else
-					local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(target, qDelay, qWidth, qRange, qSpeed, myHero, true)
+					local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(target, skills.SkillQ.delay, skills.SkillQ.width, skills.SkillQ.range, skills.SkillQ.speed, myHero, true)
 					if HitChance >= 2 then
 						CastSpell(_Q, CastPosition.x, CastPosition.z)
 						return
 					end
 				end
-				elseif targetHasQ(target) then
+
+				if (TargetHaveBuff("blindmonkpassive_cosmetic", myHero) or TargetHaveBuff("BlindMonkQOne", myHero)) then
 					if myHero:CanUseSpell(_W) == READY and myHero:GetSpellData(_W).name == "BlindMonkWOne" and enemiesAround(1500) == 1 and myHero.mana >= 80 and (myHero.health / myHero.maxHealth) > 0.5 then
 						allyMinions:update()
 						for i, minion in pairs(allyMinions.objects) do
@@ -848,10 +850,10 @@ function combo(inseca)
                         if myHero:GetSpellData(_Q).name == "BlindMonkQOne" then
 							if VIP_USER and Config.Ads.prodiction then
 								local pos, info = Prodiction.GetPrediction(focusEnemy, skills.SkillQ.range, skills.SkillQ.speed, skills.SkillQ.delay, skills.SkillQ.width)
-								if info.hitchance >= 2 and GetDistance(pos) <= 1000 then 
-								ProdictQ:GetPredictionCallBack(focusEnemy, CastQ)
-								else
-								CastQ(focusEnemy)
+								if info.hitchance >= 2 and GetDistance(pos) <= skills.SkillQ.range then
+									ProdictQ:GetPredictionCallBack(target, CastQ)
+								elseif GetDistance(pos) <= skills.SkillQ.range then
+									CastQ(focusEnemy)
 								end
 							else
                                 local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(focusEnemy, qDelay, qWidth, qRange, qSpeed, myHero, true)
@@ -942,10 +944,10 @@ function normalcombo()
                         if myHero:GetSpellData(_Q).name == "BlindMonkQOne" then
 							if VIP_USER and Config.Ads.prodiction then
 								local pos, info = Prodiction.GetPrediction(focusEnemy, skills.SkillQ.range, skills.SkillQ.speed, skills.SkillQ.delay, skills.SkillQ.width)
-								if info.hitchance >= 2 and GetDistance(pos) <= 1000 then 
-								ProdictQ:GetPredictionCallBack(focusEnemy, CastQ)
-								else
-								CastQ(focusEnemy)
+								if info.hitchance >= 2 and GetDistance(pos) <= skills.SkillQ.range then
+									ProdictQ:GetPredictionCallBack(target, CastQ)
+								elseif GetDistance(pos) <= skills.SkillQ.range then
+									CastQ(focusEnemy)
 								end
 							else
                                 local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(focusEnemy, qDelay, qWidth, qRange, qSpeed, myHero, true)
@@ -1068,10 +1070,10 @@ function starcombo()
                         if myHero:GetSpellData(_Q).name == "BlindMonkQOne" then
 							if VIP_USER and Config.Ads.prodiction then
 								local pos, info = Prodiction.GetPrediction(focusEnemy, skills.SkillQ.range, skills.SkillQ.speed, skills.SkillQ.delay, skills.SkillQ.width)
-								if info.hitchance >= 2 and GetDistance(pos) <= 1100 then 
-								ProdictQ:GetPredictionCallBack(focusEnemy, CastQ)
-								else
-								CastSpell(_Q, pos.x, pos.z)
+								if info.hitchance >= 2 and GetDistance(pos) <= skills.SkillQ.range then
+									ProdictQ:GetPredictionCallBack(target, CastQ)
+								elseif GetDistance(pos) <= skills.SkillQ.range then
+									CastQ(focusEnemy)
 								end
 							else
                                 local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(focusEnemy, qDelay, qWidth, qRange, qSpeed, myHero, true)
@@ -1519,9 +1521,7 @@ function CastQ(unit, focusEnemy)
 		focusEnemy = ts.target
     if GetDistance(focusEnemy) < skills.SkillQ.range and myHero:CanUseSpell(_Q) == READY and myHero:GetSpellData(_Q).name == "BlindMonkQOne" then
         local focusEnemy, info = Prodiction.GetPrediction(unit, skills.SkillQ.range, skills.SkillQ.speed, skills.SkillQ.delay, skills.SkillQ.width)
-    	if focusEnemy and info.hitchance ~= nil and not info.mCollision() and not Config.insettings.igCol then
-				CastSpell(_Q, focusEnemy.x, focusEnemy.z)
-    	elseif focusEnemy and info.hitchance ~= nil and info.mCollision() == 1 and Config.insettings.igCol then
+    	if focusEnemy and not info.mCollision() then
 				CastSpell(_Q, focusEnemy.x, focusEnemy.z)
 		end
     end
