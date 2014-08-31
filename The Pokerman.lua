@@ -1,6 +1,6 @@
 if myHero.charName ~= "TwistedFate" then return end
 
-local version = "1.5"
+local version = "1.6"
 local AUTOUPDATE = true
 
 local SCRIPT_NAME = "The Pokerman"
@@ -285,38 +285,38 @@ function OnTick()
 				if nTargets >= 2 then
 					selected = "redcardlock"
 					if GetDistance(Target, myHero) <= 800 then
-						CastSpell(_W, Target.x, Target.z)
+						CastSpell(_W)
 					end
 					lastUse = GetTickCount()
 				elseif (myHero.mana / myHero.maxMana > TPMConfig.ComboSettings.ManaManager /100) then
 					selected = "goldcardlock"
 					if GetDistance(Target, myHero) <= 800 then
-						CastSpell(_W, Target.x, Target.z)
+						CastSpell(_W)
 					end
 					lastUse = GetTickCount()
 				elseif (myHero.mana / myHero.maxMana < TPMConfig.ComboSettings.ManaManager /100) then
 					selected = "bluecardlock"
 					if GetDistance(Target, myHero) <= 800 then
-						CastSpell(_W, Target.x, Target.z)
+						CastSpell(_W)
 					end
 					lastUse = GetTickCount()
 				end
 			elseif TPMConfig.ComboSettings.SelectCard == 2 and myHero:GetSpellData(_W).name == "PickACard" and GetTickCount()-lastUse2 >= 2400 and GetTickCount()-lastUse >= 500 then
 				selected = "goldcardlock"
 				if GetDistance(Target, myHero) <= 800 then
-					CastSpell(_W, Target.x, Target.z)
+					CastSpell(_W)
 				end
 				lastUse = GetTickCount()
 			elseif TPMConfig.ComboSettings.SelectCard == 3 and myHero:GetSpellData(_W).name == "PickACard" and GetTickCount()-lastUse2 >= 2400 and GetTickCount()-lastUse >= 500 then
 				selected = "redcardlock"
 				if GetDistance(Target, myHero) <= 800 then
-					CastSpell(_W, Target.x, Target.z)
+					CastSpell(_W)
 				end
 				lastUse = GetTickCount()
 			elseif TPMConfig.ComboSettings.SelectCard == 4 and myHero:GetSpellData(_W).name == "PickACard" and GetTickCount()-lastUse2 >= 2400 and GetTickCount()-lastUse >= 500 then
 				selected = "bluecardlock"
 				if GetDistance(Target, myHero) <= 800 then
-					CastSpell(_W, Target.x, Target.z)
+					CastSpell(_W)
 				end
 				lastUse = GetTickCount()
 			end
@@ -334,14 +334,14 @@ function OnTick()
 			local AOECastPosition, MainTargetHitChance, nTargets = VP:GetLineAOECastPosition(Target, 0, 80, 600, 2000, myHero)
 				if nTargets >= 1 then
 					if GetDistance(Target, myHero) <= Skills.SkillQ.range then
-						CastSpell(_Q, Target.x, Target.z)
+						CastSpell(_Q, AOECastPosition.x, AOECastPosition.z)
 					end
 				end
 		elseif QREADY and ValidTarget(Target) and GetDistance(Target, myHero) then
 			local AOECastPosition, MainTargetHitChance, nTargets = VP:GetLineAOECastPosition(Target, 0, 80, 600, 2000, myHero)
 				if nTargets >= 1 and MainTargetHitChance >= 3 then
 					if GetDistance(Target, myHero) <= Skills.SkillQ.range then
-						CastSpell(_Q, Target.x, Target.z)
+						CastSpell(_Q, AOECastPosition.x, AOECastPosition.z)
 					end
 				end
 		end
@@ -356,7 +356,7 @@ function OnTick()
 					local AOECastPosition, MainTargetHitChance, nTargets = VP:GetLineAOECastPosition(Target, 0, 80, 600, 2000, myHero)
 					if nTargets >= 1 and MainTargetHitChance >= 2 then
 						if GetDistance(Target, myHero) <= Skills.SkillQ.range then
-							CastSpell(_Q, Target.x, Target.z)
+							CastSpell(_Q, AOECastPosition.x, AOECastPosition.z)
 						end
 					end
 				end
@@ -366,19 +366,19 @@ function OnTick()
 				if TPMConfig.HarassSettings.HarassOnly == 1 and myHero:GetSpellData(_W).name == "PickACard" and GetTickCount()-lastUse2 >= 2400 and GetTickCount()-lastUse >= 500 then
 					selected = "goldcardlock"
 					if GetDistance(Target, myHero) <= 800 then
-						CastSpell(_W, Target.x, Target.z)
+						CastSpell(_W)
 					end
 					lastUse = GetTickCount()
 				elseif TPMConfig.HarassSettings.HarassOnly == 2 and myHero:GetSpellData(_W).name == "PickACard" and GetTickCount()-lastUse2 >= 2400 and GetTickCount()-lastUse >= 500 then
 					selected = "redcardlock"
 					if GetDistance(Target, myHero) <= 800 then
-						CastSpell(_W, Target.x, Target.z)
+						CastSpell(_W)
 					end
 					lastUse = GetTickCount()
 				elseif TPMConfig.HarassSettings.HarassOnly == 3 and myHero:GetSpellData(_W).name == "PickACard" and GetTickCount()-lastUse2 >= 2400 and GetTickCount()-lastUse >= 500 then
 					selected = "bluecardlock"
 					if GetDistance(Target, myHero) <= 800 then
-						CastSpell(_W, Target.x, Target.z)
+						CastSpell(_W)
 					end
 					lastUse = GetTickCount()
 				end
@@ -391,7 +391,7 @@ function OnTick()
 					local AOECastPosition, MainTargetHitChance, nTargets = VP:GetLineAOECastPosition(Target, 0, 80, 600, 2000, myHero)
 					if nTargets >= 1 and MainTargetHitChance >= 2 then
 						if GetDistance(Target, myHero) <= Skills.SkillQ.range then
-							CastSpell(_Q, Target.x, Target.z)
+							CastSpell(_Q, AOECastPosition.x, AOECastPosition.z)
 						end
 					end
 				end
@@ -401,19 +401,19 @@ function OnTick()
 				if TPMConfig.HarassSettings.AutoWselect == 1 and myHero:GetSpellData(_W).name == "PickACard" and GetTickCount()-lastUse2 >= 2400 and GetTickCount()-lastUse >= 500 then
 					selected = "goldcardlock"
 					if GetDistance(Target, myHero) <= 800 then
-						CastSpell(_W, Target.x, Target.z)
+						CastSpell(_W)
 					end
 					lastUse = GetTickCount()
 				elseif TPMConfig.HarassSettings.AutoWselect == 2 and myHero:GetSpellData(_W).name == "PickACard" and GetTickCount()-lastUse2 >= 2400 and GetTickCount()-lastUse >= 500 then
 					selected = "redcardlock"
 					if GetDistance(Target, myHero) <= 800 then
-						CastSpell(_W, Target.x, Target.z)
+						CastSpell(_W)
 					end
 					lastUse = GetTickCount()
 				elseif TPMConfig.HarassSettings.AutoWselect == 3 and myHero:GetSpellData(_W).name == "PickACard" and GetTickCount()-lastUse2 >= 2400 and GetTickCount()-lastUse >= 500 then
 					selected = "bluecardlock"
 					if GetDistance(Target, myHero) <= 800 then
-						CastSpell(_W, Target.x, Target.z)
+						CastSpell(_W)
 					end
 					lastUse = GetTickCount()
 				end
@@ -563,7 +563,7 @@ function AutoQKS(Target)
 			local AOECastPosition, MainTargetHitChance, nTargets = VP:GetLineAOECastPosition(Target, 0, 80, 600, 2000, myHero)
 			if nTargets >= 1 and MainTargetHitChance >= 2 then
 				if GetDistance(Target, myHero) <= Skills.SkillQ.range then
-					CastSpell(_Q, Target.x, Target.z)
+					CastSpell(_Q, AOECastPosition.x, AOECastPosition.z)
 				end
 			end
 		end
