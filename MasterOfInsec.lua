@@ -1,6 +1,6 @@
 if myHero.charName ~= "LeeSin" then return end
 
-local version = "3.5"
+local version = "3.6"
 local AUTOUPDATE = true
 
 
@@ -192,6 +192,9 @@ function OnTick()
 	CDHandler()
 
 	skills.SkillQ.range = Config.csettings.qslider
+
+	Orbwalker:EnableAttacks()
+	Orbwalker:ForceTarget(target)
 	
 	if myHero.dead then
 		return
@@ -435,7 +438,7 @@ function insec()
 					targetObj2 = targetObj
 					end
 					
-					local wardDistance = 275
+					local wardDistance = 300
 					local dPredict = GetDistance(targetObj2, friendlyObj)
 					local xE = friendlyObj.x + ((dPredict + wardDistance) / dPredict) * (targetObj2.x - friendlyObj.x)
 					local zE = friendlyObj.z + ((dPredict + wardDistance) / dPredict) * (targetObj2.z - friendlyObj.z)
@@ -498,7 +501,7 @@ function insec()
 						targetObj2 = targetObj
 					end
 				
-					local wardDistance = 275
+					local wardDistance = 300
 					local dPredict = GetDistance(targetObj2, NearestAlly)
 					local xE = NearestAlly.x + ((dPredict + wardDistance) / dPredict) * (targetObj2.x - NearestAlly.x)
 					local zE = NearestAlly.z + ((dPredict + wardDistance) / dPredict) * (targetObj2.z - NearestAlly.z)
