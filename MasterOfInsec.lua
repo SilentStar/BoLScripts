@@ -1,6 +1,6 @@
 if myHero.charName ~= "LeeSin" then return end
 
-local version = "3.6"
+local version = "3.7"
 local AUTOUPDATE = true
 
 
@@ -23,6 +23,7 @@ end
 local RequireI = Require("SourceLib")
 RequireI:Add("vPrediction", "https://raw.github.com/Hellsing/BoL/master/common/VPrediction.lua")
 RequireI:Add("SOW", "https://raw.github.com/Hellsing/BoL/master/common/SOW.lua")
+RequireI:Add("Collision_Mod", "https://raw.githubusercontent.com/SilentStar/BoLScripts/master/Extra/Collision_Mod.lua")
 
 RequireI:Check()
 
@@ -71,29 +72,30 @@ if myHero:GetSpellData(SUMMONER_1).name:find("summonerflash") then
 		flash = nil
 	end
 
-if myHero:GetSpellData(SUMMONER_1).name:find("summonersmite") then
-		smiteSlot = SUMMONER_1
-	elseif myHero:GetSpellData(SUMMONER_2).name:find("summonersmite") then
-  		smiteSlot = SUMMONER_2
-  	else
-  		smiteSlot = nil
-  	end
+-- Smite Q Function --
 
-if smiteSlot then 
-	Smiteison = true
-end
+local smiterange = 800
+local smiteSlot = nil
+local Smiteison = false
+
+if myHero:GetSpellData(SUMMONER_1).name:find("smite") then smiteSlot = SUMMONER_1
+  elseif myHero:GetSpellData(SUMMONER_2).name:find("smite") then smiteSlot = SUMMONER_2 end
+	if smiteSlot then Smiteison = true end
 
 function OnLoad()
 
 	UpdateWeb(true, ScriptName, id, HWID)
 
 	Config = scriptConfig("Master of Insec", "LeeSinCombo")
-	
-	Config:addParam("scriptActive", "[MOI] Combo", SCRIPT_PARAM_ONKEYDOWN, false, 32)
-	Config:addParam("starActive", "[MOI] Star Combo", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("X"))
-	Config:addParam("insecMake", "[MOI] Insec", SCRIPT_PARAM_ONKEYDOWN, false, 84)
-	Config:addParam("harass", "[MOI] Harass", SCRIPT_PARAM_ONKEYDOWN, false, 71)
-	Config:addParam("wardJump", "[MOI] Ward Jump", SCRIPT_PARAM_ONKEYDOWN, false, 67)
+
+	Config:addSubMenu("[MOI] Key Bindings", "KeyBindings")
+	Config.KeyBindings:addParam("scriptActive", "Combo Key", SCRIPT_PARAM_ONKEYDOWN, false, 32)
+	Config.KeyBindings:addParam("insecMake", "Insec Key", SCRIPT_PARAM_ONKEYDOWN, false, 84)
+	Config.KeyBindings:addParam("starActive", "Star Combo Key", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("X"))
+	Config.KeyBindings:addParam("harass", "Harass Key", SCRIPT_PARAM_ONKEYDOWN, false, 71)
+	Config.KeyBindings:addParam("wardJump", "Ward Jump Key", SCRIPT_PARAM_ONKEYDOWN, false, 67)
+	Config.KeyBindings:addParam("lclr", "Laneclear Key", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("M"))
+	Config.KeyBindings:addParam("jclr", "Jungleclear Key", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("M"))
 	
 	Config:addSubMenu("[MOI] Combo Settings", "csettings")
 	Config.csettings:addParam("qslider", "Set Q Range", SCRIPT_PARAM_SLICE, 1000, 50, 1100, 0)
@@ -102,36 +104,29 @@ function OnLoad()
 	Config.csettings:addParam("autowusage", "Use W if low hp", SCRIPT_PARAM_ONOFF, false)
 	Config.csettings:addParam("eusage", "Use E in combo", SCRIPT_PARAM_ONOFF, true)
 	Config.csettings:addParam("rusage", "Use R to finish the enemy", SCRIPT_PARAM_ONOFF, true)
-	
-	Config:addSubMenu("[MOI] Draw Settings", "DrawSettings")
-	Config.DrawSettings:addParam("drawInsec", "Draw Insec Line", SCRIPT_PARAM_ONOFF, true)
-	Config.DrawSettings:addParam("drawKillable", "Draw Killable Text", SCRIPT_PARAM_ONOFF, true)
-	Config.DrawSettings:addParam("DrawQ", "Draw Q Range", SCRIPT_PARAM_ONOFF, true)
-	Config.DrawSettings:addParam("DrawW", "Draw W Range", SCRIPT_PARAM_ONOFF, true)
-	Config.DrawSettings:addParam("DrawE", "Draw E Range", SCRIPT_PARAM_ONOFF, true)
-	Config.DrawSettings:addParam("DrawR", "Draw R Range", SCRIPT_PARAM_ONOFF, true)
-	
-	Config:addSubMenu("[MOI] Misc Settings", "miscs")
-	Config.miscs:addParam("wardJumpmax", "Wardjump on max range (If mouse too far)", SCRIPT_PARAM_ONOFF, true)
-	Config.miscs:addParam("predInSec", "Use prediction for insec", SCRIPT_PARAM_ONOFF, false)
-	
+
 	Config:addSubMenu("[MOI] Insec Settings", "insettings")
 	Config.insettings:addParam("insecMode", "Insec Mode", SCRIPT_PARAM_LIST, 1, {"Nearest Ally", "Selected Ally"})
-	--Config.insettings:addParam("igCol","Ignore collision for insec", SCRIPT_PARAM_ONOFF, true)
 	Config.insettings:addParam("wjump","Wardjump Insec", SCRIPT_PARAM_ONOFF, true)
 	Config.insettings:addParam("wflash","Use flash if w on cooldown", SCRIPT_PARAM_ONOFF, true)
 	Config.insettings:addParam("pflash","Prioritize flash (disable wardjump)", SCRIPT_PARAM_ONOFF, false)
+
+	Config:addSubMenu("[MOI] Smite Q Settings", "sqsettings")
+	Config.sqsettings:addParam("sqActive", "Use Smite Q Feature", SCRIPT_PARAM_ONOFF, true)
+	Config.sqsettings:addParam("Prediction", "Smite Q Hitchance", SCRIPT_PARAM_SLICE, 80, 0, 100, 0)
+	
+	Config:addSubMenu("[MOI] Misc Settings", "miscs")
+	Config.miscs:addParam("wardJumpmax", "Wardjump on max range (If mouse too far)", SCRIPT_PARAM_ONOFF, true)
+	Config.miscs:addParam("predInSec", "Use prediction for insec", SCRIPT_PARAM_ONOFF, true)
 	
 	Config:addSubMenu("[MOI] Ultimate Settings", "useUlt")
 	
 	Config:addSubMenu("[MOI] Laneclear", "Laneclear")
-	Config.Laneclear:addParam("lclr", "Laneclear Key", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("M"))
 	Config.Laneclear:addParam("useClearQ", "Use Q in Laneclear", SCRIPT_PARAM_ONOFF, true)
 	Config.Laneclear:addParam("useClearW", "Use W in Laneclear", SCRIPT_PARAM_ONOFF, false)
 	Config.Laneclear:addParam("useClearE", "Use E in Laneclear", SCRIPT_PARAM_ONOFF, true)
 
 	Config:addSubMenu("[MOI] Jungleclear", "Jungleclear")
-	Config.Jungleclear:addParam("jclr", "Jungleclear Key", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("M"))
 	Config.Jungleclear:addParam("useClearQ", "Use Q in Jungleclear", SCRIPT_PARAM_ONOFF, true)
 	Config.Jungleclear:addParam("useClearW", "Use W in Jungleclear", SCRIPT_PARAM_ONOFF, true)
 	Config.Jungleclear:addParam("useClearE", "Use E in Jungleclear", SCRIPT_PARAM_ONOFF, true)
@@ -140,6 +135,14 @@ function OnLoad()
 	Config.Ads:addSubMenu("Skin Changer (VIP)", "VIP")
 	Config.Ads.VIP:addParam("skin", "Use custom skin", SCRIPT_PARAM_ONOFF, false)
 	Config.Ads.VIP:addParam("skin1", "Skin changer", SCRIPT_PARAM_SLICE, 1, 1, 7)
+
+	Config:addSubMenu("[MOI] Draw Settings", "DrawSettings")
+	Config.DrawSettings:addParam("drawInsec", "Draw Insec Line", SCRIPT_PARAM_ONOFF, true)
+	Config.DrawSettings:addParam("drawKillable", "Draw Killable Text", SCRIPT_PARAM_ONOFF, true)
+	Config.DrawSettings:addParam("DrawQ", "Draw Q Range", SCRIPT_PARAM_ONOFF, true)
+	Config.DrawSettings:addParam("DrawW", "Draw W Range", SCRIPT_PARAM_ONOFF, true)
+	Config.DrawSettings:addParam("DrawE", "Draw E Range", SCRIPT_PARAM_ONOFF, true)
+	Config.DrawSettings:addParam("DrawR", "Draw R Range", SCRIPT_PARAM_ONOFF, true)
 
 	Config:addSubMenu("[MOI] Target Selector", "TSSettings")
 
@@ -162,16 +165,22 @@ function OnLoad()
 	ts = TargetSelector(TARGET_NEAR_MOUSE, 1000, DAMAGE_PHYSICAL)
 	ts.name = "Focus"
 	Config.TSSettings:addTS(ts)
+
+	tpQ = TargetPredictionVIP(skills.SkillQ.range, skills.SkillQ.speed, skills.SkillQ.delay, skills.SkillQ.width)
+	tpQCollision = Collision(skills.SkillQ.range, skills.SkillQ.speed, skills.SkillQ.delay, skills.SkillQ.width)
+	Human = true
 	
 	VP = VPrediction()
 	
 	Orbwalker = SOW(VP)
 	
-	Config:permaShow("scriptActive")
-	Config:permaShow("starActive")
-	Config:permaShow("insecMake")
-	Config:permaShow("harass")
-	Config:permaShow("wardJump")
+	Config.KeyBindings:permaShow("scriptActive")
+	Config.KeyBindings:permaShow("starActive")
+	Config.KeyBindings:permaShow("insecMake")
+	Config.KeyBindings:permaShow("harass")
+	Config.KeyBindings:permaShow("wardJump")
+	Config.KeyBindings:permaShow("lclr")
+	Config.KeyBindings:permaShow("jclr")
 	
 	
 	Config:addSubMenu("[MOI] Orbwalker", "SOWorb")
@@ -217,55 +226,55 @@ function OnTick()
 		end
 	end
 	
-	if Config.insecMake and Config.insettings.wjump and not Config.insettings.pflash then
+	if Config.KeyBindings.insecMake and Config.insettings.wjump and not Config.insettings.pflash then
 		if insec() then return end
 	end
 	
-	if Config.insecMake and Config.insettings.wflash and not Config.insettings.pflash then
+	if Config.KeyBindings.insecMake and Config.insettings.wflash and not Config.insettings.pflash then
 		if winsec() then return end
 	end
 	
-	if Config.insecMake and Config.insettings.pflash then
+	if Config.KeyBindings.insecMake and Config.insettings.pflash then
 		if pinsec() then return end
 	end
 	
-	if Config.insecMake and Config.insettings.pflash and Config.insettings.wjump and not FREADY then
+	if Config.KeyBindings.insecMake and Config.insettings.pflash and Config.insettings.wjump and not FREADY then
 		if insec() then return end
 	end
 	
-	if Config.scriptActive then
+	if Config.KeyBindings.scriptActive then
 		local inseca = nil
-		if not Config.insecMake then inseca = targetObj end
+		if not Config.KeyBindings.insecMake then inseca = targetObj end
 		normalcombo()
 		return
 	end
 	
-	if Config.scriptActive or Config.insecMake then
+	if Config.KeyBindings.scriptActive or Config.KeyBindings.insecMake then
 		local inseca = nil
-		if Config.insecMake then inseca = targetObj end
+		if Config.KeyBindings.insecMake then inseca = targetObj end
 		combo(inseca)
 		return
 	end
 	
-	if Config.starActive then
+	if Config.KeyBindings.starActive then
 		if starcombo() then return end
 	end
 	
-	if Config.wardJump then
+	if Config.KeyBindings.wardJump then
 		moveToCursor()
 		wardJump()
 		return
 	end
 	
-	if Config.harass then
+	if Config.KeyBindings.harass then
 		if harass() then return end
 	end
 	
-	if Config.Laneclear.lclr then
+	if Config.KeyBindings.lclr then
 		LaneClear()
 	end
 
-	if Config.Jungleclear.jclr then
+	if Config.KeyBindings.jclr then
 		JungleClear()
 	end
 	
@@ -376,7 +385,7 @@ function wardJump()
 		elseif useSight ~= nil then
 			local wardX = mousePos.x
 			local wardZ = mousePos.z
-			if Config.miscs.wardJumpmax then
+			if Config.KeyBindings.wardJumpmax then
 				local distanceMouse = GetDistance(myHero, mousePos)
 				if distanceMouse > 600 then
 					wardX = myHero.x + (600 / distanceMouse) * (mousePos.x - myHero.x)
@@ -392,7 +401,7 @@ end
 function OnCreateObj(object)
 	if myHero.dead then return end
 	
-	if Config.wardJump or Config.insecMake or Config.insettings.wjump or Config.insettings.wflash or Config.insettings.pflash  then
+	if Config.KeyBindings.wardJump or Config.KeyBindings.insecMake or Config.insettings.wjump or Config.insettings.wflash or Config.insettings.pflash  then
 		if object ~= nil and object.valid and (object.name == "VisionWard" or object.name == "SightWard") then
 			lastWard = object
 			lastTime = GetTickCount()
@@ -818,13 +827,26 @@ function combo(inseca)
         end
        
         if focusEnemy ~= nil then
-                if QREADY then
+       			local QPos1 = tpQ:GetPrediction(focusEnemy)
+       			local QPos = GetQPrediction(focusEnemy)
+		
+				if QPos1 and tpQ:GetHitChance(focusEnemy) > Config.sqsettings.Prediction/100 and QREADY and myHero:GetSpellData(_Q).name == "BlindMonkQOne" then
+					local willCollide = tpQCollision:GetMinionCollisionList(myHero, QPos1)
+					if #willCollide == 1 and myHero:CanUseSpell(_Q) == READY and CanUseSpell(smiteSlot) == READY and GetDistance(myHero, willCollide[1]) < smiterange then
+						CastSpell(smiteSlot, willCollide[1])
+					end
+				end
+		
+				
+                if QREADY and Config.csettings.qusage then
                         if myHero:GetSpellData(_Q).name == "BlindMonkQOne" then
-                            local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(focusEnemy, qDelay, qWidth, qRange, qSpeed, myHero, true)
-                            if HitChance >= 2 then
-								CastSpell(_Q, CastPosition.x, CastPosition.z)
-									return
-							end
+                                local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(focusEnemy, qDelay, qWidth, qRange, qSpeed, myHero, true)
+                                if HitChance >= 2 and not QPos then
+                                        CastSpell(_Q, CastPosition.x, CastPosition.z)
+                                        return
+                                elseif QPos then
+									CastSpell(_Q, QPos.x, QPos.z)
+                                end
                         elseif targetHasQ(focusEnemy) and (myHero:GetDistance(focusEnemy) > 500 or insecOk or (getQDmg(focusEnemy, 0) + getDmg("AD", focusEnemy, myHero)) > focusEnemy.health or (GetTickCount() - lastTimeQ) > 2500) then
                                 if insecOk then
                                         lastWardInsec = os.clock() + 1
@@ -898,13 +920,26 @@ function normalcombo()
                 ts:update()
                 focusEnemy = ts.target
        
-       if focusEnemy ~= nil then
+        if focusEnemy ~= nil then
+       			local QPos1 = tpQ:GetPrediction(focusEnemy)
+       			local QPos = GetQPrediction(focusEnemy)
+		
+				if QPos1 and tpQ:GetHitChance(focusEnemy) > Config.sqsettings.Prediction/100 and QREADY and myHero:GetSpellData(_Q).name == "BlindMonkQOne" then
+					local willCollide = tpQCollision:GetMinionCollisionList(myHero, QPos1)
+					if #willCollide == 1 and myHero:CanUseSpell(_Q) == READY and CanUseSpell(smiteSlot) == READY and GetDistance(myHero, willCollide[1]) < smiterange then
+						CastSpell(smiteSlot, willCollide[1])
+					end
+				end
+		
+				
                 if QREADY and Config.csettings.qusage then
                         if myHero:GetSpellData(_Q).name == "BlindMonkQOne" then
                                 local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(focusEnemy, qDelay, qWidth, qRange, qSpeed, myHero, true)
-                                if HitChance >= 2 then
+                                if HitChance >= 2 and not QPos then
                                         CastSpell(_Q, CastPosition.x, CastPosition.z)
                                         return
+                                elseif QPos then
+									CastSpell(_Q, QPos.x, QPos.z)
                                 end
                         elseif targetHasQ(focusEnemy) and (myHero:GetDistance(focusEnemy) > 500 or (getQDmg(focusEnemy, 0) + getDmg("AD", focusEnemy, myHero)) > focusEnemy.health or (GetTickCount() - lastTimeQ) > 2500) then
                                 lastWardInsec = os.clock() + 1
@@ -1436,6 +1471,20 @@ function JungleClear()
 				CastSpell(_W)
 			end
 		end
+	end
+end
+
+function GetQPrediction(enemy)
+	local QPos = tpQ:GetPrediction(enemy)
+	
+	if (tpQ:GetHitChance(ts.target) > Config.sqsettings.Prediction/100) then
+		local willCollide = tpQCollision:GetMinionCollision(myHero, QPos)
+		
+		if not willCollide then
+			return QPos
+		end
+	else
+		return nil
 	end
 end
 
