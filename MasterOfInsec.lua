@@ -1,6 +1,6 @@
 if myHero.charName ~= "LeeSin" then return end
 
-local version = "3.7"
+local version = "3.8"
 local AUTOUPDATE = true
 
 
@@ -827,12 +827,12 @@ function combo(inseca)
         end
        
         if focusEnemy ~= nil then
-       			local QPos1 = tpQ:GetPrediction(focusEnemy)
-       			local QPos = GetQPrediction(focusEnemy)
+       			local QPos1 = tpQ:GetPrediction(ts.target)
+       			local QPos = GetQPrediction(ts.target)
 		
-				if QPos1 and tpQ:GetHitChance(focusEnemy) > Config.sqsettings.Prediction/100 and QREADY and myHero:GetSpellData(_Q).name == "BlindMonkQOne" then
+				if QPos1 and tpQ:GetHitChance(ts.target) > Config.sqsettings.Prediction/100 then
 					local willCollide = tpQCollision:GetMinionCollisionList(myHero, QPos1)
-					if #willCollide == 1 and myHero:CanUseSpell(_Q) == READY and CanUseSpell(smiteSlot) == READY and GetDistance(myHero, willCollide[1]) < smiterange then
+					if #willCollide == 1 and QREADY and myHero:GetSpellData(_Q).name == "BlindMonkQOne" and CanUseSpell(smiteSlot) == READY and GetDistance(myHero, willCollide[1]) < smiterange then
 						CastSpell(smiteSlot, willCollide[1])
 					end
 				end
@@ -841,7 +841,7 @@ function combo(inseca)
                 if QREADY and Config.csettings.qusage then
                         if myHero:GetSpellData(_Q).name == "BlindMonkQOne" then
                                 local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(focusEnemy, qDelay, qWidth, qRange, qSpeed, myHero, true)
-                                if HitChance >= 2 and not QPos then
+                                if HitChance >= 2 then
                                         CastSpell(_Q, CastPosition.x, CastPosition.z)
                                         return
                                 elseif QPos then
@@ -921,12 +921,12 @@ function normalcombo()
                 focusEnemy = ts.target
        
         if focusEnemy ~= nil then
-       			local QPos1 = tpQ:GetPrediction(focusEnemy)
-       			local QPos = GetQPrediction(focusEnemy)
+       			local QPos1 = tpQ:GetPrediction(ts.target)
+       			local QPos = GetQPrediction(ts.target)
 		
-				if QPos1 and tpQ:GetHitChance(focusEnemy) > Config.sqsettings.Prediction/100 and QREADY and myHero:GetSpellData(_Q).name == "BlindMonkQOne" then
+				if QPos1 and tpQ:GetHitChance(ts.target) > Config.sqsettings.Prediction/100 then
 					local willCollide = tpQCollision:GetMinionCollisionList(myHero, QPos1)
-					if #willCollide == 1 and myHero:CanUseSpell(_Q) == READY and CanUseSpell(smiteSlot) == READY and GetDistance(myHero, willCollide[1]) < smiterange then
+					if #willCollide == 1 and QREADY and myHero:GetSpellData(_Q).name == "BlindMonkQOne" and CanUseSpell(smiteSlot) == READY and GetDistance(myHero, willCollide[1]) < smiterange then
 						CastSpell(smiteSlot, willCollide[1])
 					end
 				end
@@ -935,7 +935,7 @@ function normalcombo()
                 if QREADY and Config.csettings.qusage then
                         if myHero:GetSpellData(_Q).name == "BlindMonkQOne" then
                                 local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(focusEnemy, qDelay, qWidth, qRange, qSpeed, myHero, true)
-                                if HitChance >= 2 and not QPos then
+                                if HitChance >= 2 then
                                         CastSpell(_Q, CastPosition.x, CastPosition.z)
                                         return
                                 elseif QPos then
