@@ -1,6 +1,6 @@
 if myHero.charName ~= "LeeSin" then return end
 
-local version = "3.8"
+local version = "3.9"
 local AUTOUPDATE = true
 
 
@@ -23,7 +23,6 @@ end
 local RequireI = Require("SourceLib")
 RequireI:Add("vPrediction", "https://raw.github.com/Hellsing/BoL/master/common/VPrediction.lua")
 RequireI:Add("SOW", "https://raw.github.com/Hellsing/BoL/master/common/SOW.lua")
-RequireI:Add("Collision_Mod", "https://raw.githubusercontent.com/SilentStar/BoLScripts/master/Extra/Collision_Mod.lua")
 
 RequireI:Check()
 
@@ -72,16 +71,6 @@ if myHero:GetSpellData(SUMMONER_1).name:find("summonerflash") then
 		flash = nil
 	end
 
--- Smite Q Function --
-
-local smiterange = 800
-local smiteSlot = nil
-local Smiteison = false
-
-if myHero:GetSpellData(SUMMONER_1).name:find("smite") then smiteSlot = SUMMONER_1
-  elseif myHero:GetSpellData(SUMMONER_2).name:find("smite") then smiteSlot = SUMMONER_2 end
-	if smiteSlot then Smiteison = true end
-
 function OnLoad()
 
 	UpdateWeb(true, ScriptName, id, HWID)
@@ -110,10 +99,6 @@ function OnLoad()
 	Config.insettings:addParam("wjump","Wardjump Insec", SCRIPT_PARAM_ONOFF, true)
 	Config.insettings:addParam("wflash","Use flash if w on cooldown", SCRIPT_PARAM_ONOFF, true)
 	Config.insettings:addParam("pflash","Prioritize flash (disable wardjump)", SCRIPT_PARAM_ONOFF, false)
-
-	Config:addSubMenu("[MOI] Smite Q Settings", "sqsettings")
-	Config.sqsettings:addParam("sqActive", "Use Smite Q Feature", SCRIPT_PARAM_ONOFF, true)
-	Config.sqsettings:addParam("Prediction", "Smite Q Hitchance", SCRIPT_PARAM_SLICE, 80, 0, 100, 0)
 	
 	Config:addSubMenu("[MOI] Misc Settings", "miscs")
 	Config.miscs:addParam("wardJumpmax", "Wardjump on max range (If mouse too far)", SCRIPT_PARAM_ONOFF, true)
@@ -165,10 +150,6 @@ function OnLoad()
 	ts = TargetSelector(TARGET_NEAR_MOUSE, 1000, DAMAGE_PHYSICAL)
 	ts.name = "Focus"
 	Config.TSSettings:addTS(ts)
-
-	tpQ = TargetPredictionVIP(skills.SkillQ.range, skills.SkillQ.speed, skills.SkillQ.delay, skills.SkillQ.width)
-	tpQCollision = Collision(skills.SkillQ.range, skills.SkillQ.speed, skills.SkillQ.delay, skills.SkillQ.width)
-	Human = true
 	
 	VP = VPrediction()
 	
@@ -827,17 +808,6 @@ function combo(inseca)
         end
        
         if focusEnemy ~= nil then
-       			local QPos1 = tpQ:GetPrediction(ts.target)
-       			local QPos = GetQPrediction(ts.target)
-		
-				if QPos1 and tpQ:GetHitChance(ts.target) > Config.sqsettings.Prediction/100 then
-					local willCollide = tpQCollision:GetMinionCollisionList(myHero, QPos1)
-					if #willCollide == 1 and QREADY and myHero:GetSpellData(_Q).name == "BlindMonkQOne" and CanUseSpell(smiteSlot) == READY and GetDistance(myHero, willCollide[1]) < smiterange then
-						CastSpell(smiteSlot, willCollide[1])
-					end
-				end
-		
-				
                 if QREADY and Config.csettings.qusage then
                         if myHero:GetSpellData(_Q).name == "BlindMonkQOne" then
                                 local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(focusEnemy, qDelay, qWidth, qRange, qSpeed, myHero, true)
@@ -921,17 +891,6 @@ function normalcombo()
                 focusEnemy = ts.target
        
         if focusEnemy ~= nil then
-       			local QPos1 = tpQ:GetPrediction(ts.target)
-       			local QPos = GetQPrediction(ts.target)
-		
-				if QPos1 and tpQ:GetHitChance(ts.target) > Config.sqsettings.Prediction/100 then
-					local willCollide = tpQCollision:GetMinionCollisionList(myHero, QPos1)
-					if #willCollide == 1 and QREADY and myHero:GetSpellData(_Q).name == "BlindMonkQOne" and CanUseSpell(smiteSlot) == READY and GetDistance(myHero, willCollide[1]) < smiterange then
-						CastSpell(smiteSlot, willCollide[1])
-					end
-				end
-		
-				
                 if QREADY and Config.csettings.qusage then
                         if myHero:GetSpellData(_Q).name == "BlindMonkQOne" then
                                 local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(focusEnemy, qDelay, qWidth, qRange, qSpeed, myHero, true)
@@ -1471,20 +1430,6 @@ function JungleClear()
 				CastSpell(_W)
 			end
 		end
-	end
-end
-
-function GetQPrediction(enemy)
-	local QPos = tpQ:GetPrediction(enemy)
-	
-	if (tpQ:GetHitChance(ts.target) > Config.sqsettings.Prediction/100) then
-		local willCollide = tpQCollision:GetMinionCollision(myHero, QPos)
-		
-		if not willCollide then
-			return QPos
-		end
-	else
-		return nil
 	end
 end
 
