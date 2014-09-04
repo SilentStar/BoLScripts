@@ -1,6 +1,6 @@
 if myHero.charName ~= "LeeSin" then return end
 
-local version = "3.9"
+local version = "4.0"
 local AUTOUPDATE = true
 
 
@@ -366,7 +366,7 @@ function wardJump()
 		elseif useSight ~= nil then
 			local wardX = mousePos.x
 			local wardZ = mousePos.z
-			if Config.KeyBindings.wardJumpmax then
+			if Config.miscs.wardJumpmax then
 				local distanceMouse = GetDistance(myHero, mousePos)
 				if distanceMouse > 600 then
 					wardX = myHero.x + (600 / distanceMouse) * (mousePos.x - myHero.x)
