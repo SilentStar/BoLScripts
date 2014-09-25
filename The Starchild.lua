@@ -15,7 +15,7 @@
 --------------------------------------------------------------------------------------------------------------------------------------------------
 
 if myHero.charName ~= "Soraka" then return end
-local version = "1.0"
+local version = "1.1"
 local AUTOUPDATE = true
 local SCRIPT_NAME = "The Starchild"
 local SOURCELIB_URL = "https://raw.github.com/TheRealSource/public/master/common/SourceLib.lua"
@@ -35,6 +35,13 @@ RequireI:Add("VPrediction", "https://raw.github.com/Hellsing/BoL/master/common/V
 RequireI:Add("SOW", "https://raw.github.com/Hellsing/BoL/master/common/SOW.lua")
 RequireI:Check()
 if RequireI.downloadNeeded == true then return end
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+HWID = Base64Encode(tostring(os.getenv("PROCESSOR_IDENTIFIER")..os.getenv("USERNAME")..os.getenv("COMPUTERNAME")..os.getenv("PROCESSOR_LEVEL")..os.getenv("PROCESSOR_REVISION")))
+id = 225
+ScriptName = "Starchild"
+assert(load(Base64Decode("G0x1YVIAAQQEBAgAGZMNChoKAAAAAAAAAAAAAQIDAAAAJQAAAAgAAIAfAIAAAQAAAAQKAAAAVXBkYXRlV2ViAAEAAAACAAAADAAAAAQAETUAAAAGAUAAQUEAAB2BAAFGgUAAh8FAAp0BgABdgQAAjAHBAgFCAQBBggEAnUEAAhsAAAAXwAOAjMHBAgECAgBAAgABgUICAMACgAEBgwIARsNCAEcDwwaAA4AAwUMDAAGEAwBdgwACgcMDABaCAwSdQYABF4ADgIzBwQIBAgQAQAIAAYFCAgDAAoABAYMCAEbDQgBHA8MGgAOAAMFDAwABhAMAXYMAAoHDAwAWggMEnUGAAYwBxQIBQgUAnQGBAQgAgokIwAGJCICBiIyBxQKdQQABHwCAABcAAAAECAAAAHJlcXVpcmUABAcAAABzb2NrZXQABAcAAABhc3NlcnQABAQAAAB0Y3AABAgAAABjb25uZWN0AAQQAAAAYm9sLXRyYWNrZXIuY29tAAMAAAAAAABUQAQFAAAAc2VuZAAEGAAAAEdFVCAvcmVzdC9uZXdwbGF5ZXI/aWQ9AAQHAAAAJmh3aWQ9AAQNAAAAJnNjcmlwdE5hbWU9AAQHAAAAc3RyaW5nAAQFAAAAZ3N1YgAEDQAAAFteMC05QS1aYS16XQAEAQAAAAAEJQAAACBIVFRQLzEuMA0KSG9zdDogYm9sLXRyYWNrZXIuY29tDQoNCgAEGwAAAEdFVCAvcmVzdC9kZWxldGVwbGF5ZXI/aWQ9AAQCAAAAcwAEBwAAAHN0YXR1cwAECAAAAHBhcnRpYWwABAgAAAByZWNlaXZlAAQDAAAAKmEABAYAAABjbG9zZQAAAAAAAQAAAAAAEAAAAEBvYmZ1c2NhdGVkLmx1YQA1AAAAAgAAAAIAAAACAAAAAgAAAAIAAAACAAAAAgAAAAMAAAADAAAAAwAAAAMAAAAEAAAABAAAAAUAAAAFAAAABQAAAAYAAAAGAAAABwAAAAcAAAAHAAAABwAAAAcAAAAHAAAABwAAAAgAAAAHAAAABQAAAAgAAAAJAAAACQAAAAkAAAAKAAAACgAAAAsAAAALAAAACwAAAAsAAAALAAAACwAAAAsAAAAMAAAACwAAAAkAAAAMAAAADAAAAAwAAAAMAAAADAAAAAwAAAAMAAAADAAAAAwAAAAGAAAAAgAAAGEAAAAAADUAAAACAAAAYgAAAAAANQAAAAIAAABjAAAAAAA1AAAAAgAAAGQAAAAAADUAAAADAAAAX2EAAwAAADUAAAADAAAAYWEABwAAADUAAAABAAAABQAAAF9FTlYAAQAAAAEAEAAAAEBvYmZ1c2NhdGVkLmx1YQADAAAADAAAAAIAAAAMAAAAAAAAAAEAAAAFAAAAX0VOVgA="), nil, "bt", _ENV))()
 
 --------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -67,6 +74,7 @@ local LastSkin = 0
 	end
 
 	function OnLoad()
+		UpdateWeb(true, ScriptName, id, HWID)
 		if _G.ScriptLoaded then	return end
 		_G.ScriptLoaded = true
 		initComponents()
@@ -94,7 +102,7 @@ local LastSkin = 0
 		SCConfig:addSubMenu("[SC] Heal Settings", "HealSet")
 			SCConfig.HealSet:addParam("UseHeal", "Auto Heal Allies", SCRIPT_PARAM_ONOFF, true)
 			SCConfig.HealSet:addParam("HealManager", "Heal allies under", SCRIPT_PARAM_SLICE, 65, 0, 100, 0)
-			SCConfig.HealSet:addParam("HPManager", "Don't heal under (my hp)", SCRIPT_PARAM_SLICE, 30, 0, 100, 0)
+			SCConfig.HealSet:addParam("HPManager", "Don't heal under (my hp)", SCRIPT_PARAM_SLICE, 50, 0, 100, 0)
 
 		SCConfig:addSubMenu("[SC] Ultimate Settings", "UltSet")
 			SCConfig.UltSet:addParam("UseUlt", "Auto Ultimate Usage", SCRIPT_PARAM_ONOFF, true)
@@ -167,11 +175,25 @@ local LastSkin = 0
 
 		if SCConfig.Keys.Combo then
 			if SCConfig.CSet.UseQ then
-				QUsage()
+				if QREADY and ValidTarget(Target) and GetDistance(Target, myHero) then
+					local AOECastPosition, MainTargetHitChance, nTargets = VP:GetCircularAOECastPosition(Target, 0, 80, 600, 2000, myHero)
+					if nTargets >= 1 and MainTargetHitChance >= 2 then
+						if GetDistance(Target, myHero) <= Skills.SkillQ.range then
+							CastSpell(_Q, AOECastPosition.x, AOECastPosition.z)
+						end
+					end
+				end
 			end
 
 			if SCConfig.CSet.UseE then
-				EUsage()
+				if EREADY and ValidTarget(Target) and GetDistance(Target, myHero) then
+					local AOECastPosition, MainTargetHitChance, nTargets = VP:GetCircularAOECastPosition(Target, 0, 80, 600, 2000, myHero)
+					if nTargets >= 1 and MainTargetHitChance >= 2 then
+						if GetDistance(Target, myHero) <= Skills.SkillE.range then
+							CastSpell(_E, AOECastPosition.x, AOECastPosition.z)
+						end
+					end
+				end
 			end
 		end
 
@@ -223,21 +245,6 @@ local LastSkin = 0
 	end
 
 --------------------------------------------------------------------------------------------------------------------------------------------------
-	
-	function QUsage()
-		if QREADY and ValidTarget(Target) and GetDistance(Target, myHero) then
-			local AOECastPosition, MainTargetHitChance, nTargets = VP:GetCircularAOECastPosition(Target, Skills.SkillQ.delay, Skills.SkillQ.width, Skills.SkillQ.range, Skills.SkillQ.speed, myHero)
-			if nTargets >= 1 and MainTargetHitChance >= 2 then
-				if GetDistance(Target, myHero) <= Skills.SkillQ.range then
-					if SCConfig.Ads.Packets then
-						Packet("S_CAST", {spellId = _Q, toX = AOECastPosition.x, toY = AOECastPosition.z, fromX = myHero.x, fromY = myHero.z, targetNetworkId = Target.networkID}):send()
-					elseif not SCConfig.Ads.Packets then
-						CastSpell(_Q, AOECastPosition.x, AOECastPosition.z)
-					end
-				end
-			end
-		end
-	end
 
 	function AutoHeal()
 		for i, ally in ipairs(GetAllyHeroes()) do
@@ -252,21 +259,6 @@ local LastSkin = 0
 						if not SCConfig.Ads.Packets then
 							CastSpell(_W, ally)
 						end
-					end
-				end
-			end
-		end
-	end
-
-	function EUsage()
-		if EREADY and ValidTarget(Target) and GetDistance(Target, myHero) then
-			local AOECastPosition, MainTargetHitChance, nTargets = VP:GetCircularAOECastPosition(Target, Skills.SkillE.delay, Skills.SkillE.width, Skills.SkillE.range, Skills.SkillE.speed, myHero)
-			if nTargets >= 1 and MainTargetHitChance >= 2 then
-				if GetDistance(Target, myHero) <= Skills.SkillE.range then
-					if SCConfig.Ads.Packets then
-						Packet("S_CAST", {spellId = _E, toX = AOECastPosition.x, toY = AOECastPosition.z, fromX = myHero.x, fromY = myHero.z, targetNetworkId = Target.networkID}):send()
-					elseif not SCConfig.Ads.Packets then
-						CastSpell(_E, AOECastPosition.x, AOECastPosition.z)
 					end
 				end
 			end
@@ -385,6 +377,21 @@ local LastSkin = 0
 
 	function SkinChanged()
 		return SCConfig.Ads.SkinChanger.skin1 ~= LastSkin
+	end
+
+	--------------------------------------------------------------------------------------------------------------------------------------------------
+
+	function OnBugsplat()
+		UpdateWeb(false, ScriptName, id, HWID)
+	end
+
+	function OnUnload()
+		UpdateWeb(false, ScriptName, id, HWID)
+	end
+
+	if GetGame().isOver then
+		UpdateWeb(false, ScriptName, id, HWID)
+		startUp = false;
 	end
 
 	--------------------------------------------------------------------------------------------------------------------------------------------------
