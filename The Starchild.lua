@@ -15,7 +15,7 @@
 --------------------------------------------------------------------------------------------------------------------------------------------------
 
 if myHero.charName ~= "Soraka" then return end
-local version = "1.2"
+local version = "1.3"
 local AUTOUPDATE = true
 local SCRIPT_NAME = "The Starchild"
 local SOURCELIB_URL = "https://raw.github.com/TheRealSource/public/master/common/SourceLib.lua"
@@ -193,11 +193,21 @@ local LastSkin = 0
 
 		if SCConfig.Keys.Harass then
 			if SCConfig.HSet.UseQ then
-				QUsage()
+				if QREADY and ValidTarget(Target) and GetDistance(Target, myHero) then
+					local AOECastPosition, MainTargetHitChance, nTargets = VP:GetCircularAOECastPosition(Target, Skills.SkillQ.delay, Skills.SkillQ.width, Skills.SkillQ.range, Skills.SkillQ.speed, myHero)
+					if nTargets >= 1 and MainTargetHitChance >= 2 then
+						CastSpell(_Q, AOECastPosition.x, AOECastPosition.z)
+					end
+				end
 			end
 			
 			if SCConfig.HSet.UseE then
-				EUsage()
+				if EREADY and ValidTarget(Target) and GetDistance(Target, myHero) then
+					local AOECastPosition, MainTargetHitChance, nTargets = VP:GetCircularAOECastPosition(Target, Skills.SkillQ.delay, Skills.SkillQ.width, Skills.SkillQ.range, Skills.SkillQ.speed, myHero)
+					if nTargets >= 1 and MainTargetHitChance >= 2 then
+						CastSpell(_E, AOECastPosition.x, AOECastPosition.z)
+					end
+				end
 			end
 		end
 
