@@ -15,7 +15,7 @@
 --------------------------------------------------------------------------------------------------------------------------------------------------
 
 if myHero.charName ~= "Soraka" then return end
-local version = "1.1"
+local version = "1.2"
 local AUTOUPDATE = true
 local SCRIPT_NAME = "The Starchild"
 local SOURCELIB_URL = "https://raw.github.com/TheRealSource/public/master/common/SourceLib.lua"
@@ -158,10 +158,8 @@ local LastSkin = 0
 	function OnTick()
 		local Target = GetCustomTarget()
 
-		if _G.AutoCarry == nil and _G.MMA_Loaded == nil then
-			Orbwalker:EnableAttacks()
-			Orbwalker:ForceTarget(Target)
-		end
+		Orbwalker:EnableAttacks()
+		Orbwalker:ForceTarget(Target)
 
 		QREADY = (myHero:CanUseSpell(_Q) == READY)
 		WREADY = (myHero:CanUseSpell(_W) == READY)
@@ -176,22 +174,18 @@ local LastSkin = 0
 		if SCConfig.Keys.Combo then
 			if SCConfig.CSet.UseQ then
 				if QREADY and ValidTarget(Target) and GetDistance(Target, myHero) then
-					local AOECastPosition, MainTargetHitChance, nTargets = VP:GetCircularAOECastPosition(Target, 0, 80, 600, 2000, myHero)
+					local AOECastPosition, MainTargetHitChance, nTargets = VP:GetCircularAOECastPosition(Target, Skills.SkillQ.delay, Skills.SkillQ.width, Skills.SkillQ.range, Skills.SkillQ.speed, myHero)
 					if nTargets >= 1 and MainTargetHitChance >= 2 then
-						if GetDistance(Target, myHero) <= Skills.SkillQ.range then
-							CastSpell(_Q, AOECastPosition.x, AOECastPosition.z)
-						end
+						CastSpell(_Q, AOECastPosition.x, AOECastPosition.z)
 					end
 				end
 			end
 
 			if SCConfig.CSet.UseE then
 				if EREADY and ValidTarget(Target) and GetDistance(Target, myHero) then
-					local AOECastPosition, MainTargetHitChance, nTargets = VP:GetCircularAOECastPosition(Target, 0, 80, 600, 2000, myHero)
+					local AOECastPosition, MainTargetHitChance, nTargets = VP:GetCircularAOECastPosition(Target, Skills.SkillQ.delay, Skills.SkillQ.width, Skills.SkillQ.range, Skills.SkillQ.speed, myHero)
 					if nTargets >= 1 and MainTargetHitChance >= 2 then
-						if GetDistance(Target, myHero) <= Skills.SkillE.range then
-							CastSpell(_E, AOECastPosition.x, AOECastPosition.z)
-						end
+						CastSpell(_E, AOECastPosition.x, AOECastPosition.z)
 					end
 				end
 			end
