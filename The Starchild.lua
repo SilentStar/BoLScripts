@@ -15,7 +15,7 @@
 --------------------------------------------------------------------------------------------------------------------------------------------------
 
 if myHero.charName ~= "Soraka" then return end
-local version = "1.3"
+local version = "1.4"
 local AUTOUPDATE = true
 local SCRIPT_NAME = "The Starchild"
 local SOURCELIB_URL = "https://raw.github.com/TheRealSource/public/master/common/SourceLib.lua"
@@ -48,11 +48,11 @@ assert(load(Base64Decode("G0x1YVIAAQQEBAgAGZMNChoKAAAAAAAAAAAAAQIDAAAAJQAAAAgAAI
 local Ranges = { AA = 550 }
 local Skills = {
     
-    SkillQ = {name = myHero:GetSpellData(_Q).name, range = 925, delay = 0.5, speed = math.huge, width = 60},
+    SkillQ = {name = myHero:GetSpellData(_Q).name, range = 975, delay = 0.5, speed = 1500, width = 110},
 	
-	SkillW = {name = myHero:GetSpellData(_W).name, range = 450, delay = 0, speed = 1000, width = 0},
+	SkillW = {name = myHero:GetSpellData(_W).name, range = 450, delay = 0.5, speed = 1000, width = 0},
 	
-	SkillE = {name = myHero:GetSpellData(_E).name, range = 925, delay = 0.5, speed = math.huge, width = 90},
+	SkillE = {name = myHero:GetSpellData(_E).name, range = 925, delay = 0.5, speed = 2000, width = 25},
 	
 	SkillR = {name = myHero:GetSpellData(_R).name, delay = 0.5}
 }
@@ -118,8 +118,9 @@ local LastSkin = 0
 			SCConfig.Ads:addParam("Packets", "Packet Usage", SCRIPT_PARAM_ONOFF, true)
 
 		SCConfig:addSubMenu("[SC] Draw Settings", "DSet")
-			SCConfig.DSet:addParam("DrawQE", "Draw Q/E Range", SCRIPT_PARAM_ONOFF, true)
+			SCConfig.DSet:addParam("DrawQ", "Draw Q Range", SCRIPT_PARAM_ONOFF, true)
 			SCConfig.DSet:addParam("DrawW", "Draw W Range", SCRIPT_PARAM_ONOFF, true)
+			SCConfig.DSet:addParam("DrawE", "Draw E Range", SCRIPT_PARAM_ONOFF, true)
 
 		if SCConfig.Ads.SkinChanger.skin then
 			GenModelPacket("Soraka", SCConfig.Ads.SkinChanger.skin1)
@@ -235,10 +236,16 @@ local LastSkin = 0
 --------------------------------------------------------------------------------------------------------------------------------------------------
 
 	function OnDraw()
-		if SCConfig.DSet.DrawQE and QREADY and not myHero.dead then
+		if SCConfig.DSet.DrawQ and QREADY and not myHero.dead then
 			DrawCircle(myHero.x, myHero.y, myHero.z, Skills.SkillQ.range, 0xFF008000)
-		elseif SCConfig.DSet.DrawQE and not QREADY and not myHero.dead then
+		elseif SCConfig.DSet.DrawQ and not QREADY and not myHero.dead then
 			DrawCircle(myHero.x, myHero.y, myHero.z, Skills.SkillQ.range, 0xFFFF0000)
+		end
+
+		if SCConfig.DSet.DrawE and EREADY and not myHero.dead then
+			DrawCircle(myHero.x, myHero.y, myHero.z, Skills.SkillE.range, 0xFF008000)
+		elseif SCConfig.DSet.DrawE and not EREADY and not myHero.dead then
+			DrawCircle(myHero.x, myHero.y, myHero.z, Skills.SkillE.range, 0xFFFF0000)
 		end
 
 		if SCConfig.DSet.DrawW and WREADY and not myHero.dead then
