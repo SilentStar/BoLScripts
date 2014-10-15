@@ -15,7 +15,7 @@
 --------------------------------------------------------------------------------------------------------------------------------------------------
 
 if myHero.charName ~= "Soraka" then return end
-local version = "1.5"
+local version = "1.6"
 local AUTOUPDATE = true
 local SCRIPT_NAME = "The Starchild"
 local SOURCELIB_URL = "https://raw.github.com/TheRealSource/public/master/common/SourceLib.lua"
@@ -41,11 +41,11 @@ if RequireI.downloadNeeded == true then return end
 local Ranges = { AA = 550 }
 local Skills = {
     
-    SkillQ = {name = myHero:GetSpellData(_Q).name, range = 975, delay = 0.5, speed = 1500, width = 110},
+    SkillQ = {name = myHero:GetSpellData(_Q).name, range = 900, delay = 0.5, speed = 1500, width = 110},
 	
 	SkillW = {name = myHero:GetSpellData(_W).name, range = 450, delay = 0.5, speed = 1000, width = 0},
 	
-	SkillE = {name = myHero:GetSpellData(_E).name, range = 925, delay = 0.5, speed = 2000, width = 25},
+	SkillE = {name = myHero:GetSpellData(_E).name, range = 875, delay = 0.5, speed = 2000, width = 25},
 	
 	SkillR = {name = myHero:GetSpellData(_R).name, delay = 0.5}
 }
@@ -67,7 +67,6 @@ local LastSkin = 0
 	end
 
 	function OnLoad()
-		UpdateWeb(true, ScriptName, id, HWID)
 		if _G.ScriptLoaded then	return end
 		_G.ScriptLoaded = true
 		initComponents()
@@ -170,7 +169,11 @@ local LastSkin = 0
 				if QREADY and ValidTarget(Target) and GetDistance(Target, myHero) then
 					local AOECastPosition, MainTargetHitChance, nTargets = VP:GetCircularAOECastPosition(Target, Skills.SkillQ.delay, Skills.SkillQ.width, Skills.SkillQ.range, Skills.SkillQ.speed, myHero)
 					if nTargets >= 1 and MainTargetHitChance >= 2 then
-						CastSpell(_Q, AOECastPosition.x, AOECastPosition.z)
+						if SCConfig.Ads.Packets then
+							Packet("S_CAST", {spellId = _Q, toX = AOECastPosition.x, toY = AOECastPosition.z , fromX = AOECastPosition.x , fromY = AOECastPosition.z }):send()
+						elseif not SCConfig.Ads.Packets then
+							CastSpell(_Q, AOECastPosition.x, AOECastPosition.z)
+						end
 					end
 				end
 			end
@@ -179,7 +182,11 @@ local LastSkin = 0
 				if EREADY and ValidTarget(Target) and GetDistance(Target, myHero) then
 					local AOECastPosition, MainTargetHitChance, nTargets = VP:GetCircularAOECastPosition(Target, Skills.SkillQ.delay, Skills.SkillQ.width, Skills.SkillQ.range, Skills.SkillQ.speed, myHero)
 					if nTargets >= 1 and MainTargetHitChance >= 2 then
-						CastSpell(_E, AOECastPosition.x, AOECastPosition.z)
+						if SCConfig.Ads.Packets then
+							Packet("S_CAST", {spellId = _E, toX = AOECastPosition.x, toY = AOECastPosition.z , fromX = AOECastPosition.x , fromY = AOECastPosition.z }):send()
+						elseif not SCConfig.Ads.Packets then
+							CastSpell(_E, AOECastPosition.x, AOECastPosition.z)
+						end
 					end
 				end
 			end
@@ -190,7 +197,11 @@ local LastSkin = 0
 				if QREADY and ValidTarget(Target) and GetDistance(Target, myHero) then
 					local AOECastPosition, MainTargetHitChance, nTargets = VP:GetCircularAOECastPosition(Target, Skills.SkillQ.delay, Skills.SkillQ.width, Skills.SkillQ.range, Skills.SkillQ.speed, myHero)
 					if nTargets >= 1 and MainTargetHitChance >= 2 then
-						CastSpell(_Q, AOECastPosition.x, AOECastPosition.z)
+						if SCConfig.Ads.Packets then
+							Packet("S_CAST", {spellId = _Q, toX = AOECastPosition.x, toY = AOECastPosition.z , fromX = AOECastPosition.x , fromY = AOECastPosition.z }):send()
+						elseif not SCConfig.Ads.Packets then
+							CastSpell(_Q, AOECastPosition.x, AOECastPosition.z)
+						end
 					end
 				end
 			end
@@ -199,7 +210,11 @@ local LastSkin = 0
 				if EREADY and ValidTarget(Target) and GetDistance(Target, myHero) then
 					local AOECastPosition, MainTargetHitChance, nTargets = VP:GetCircularAOECastPosition(Target, Skills.SkillQ.delay, Skills.SkillQ.width, Skills.SkillQ.range, Skills.SkillQ.speed, myHero)
 					if nTargets >= 1 and MainTargetHitChance >= 2 then
-						CastSpell(_E, AOECastPosition.x, AOECastPosition.z)
+						if SCConfig.Ads.Packets then
+							Packet("S_CAST", {spellId = _E, toX = AOECastPosition.x, toY = AOECastPosition.z , fromX = AOECastPosition.x , fromY = AOECastPosition.z }):send()
+						elseif not SCConfig.Ads.Packets then
+							CastSpell(_E, AOECastPosition.x, AOECastPosition.z)
+						end
 					end
 				end
 			end
@@ -383,4 +398,4 @@ local LastSkin = 0
 		return SCConfig.Ads.SkinChanger.skin1 ~= LastSkin
 	end
 
-----------------------------------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------------------------
