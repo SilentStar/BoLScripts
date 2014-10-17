@@ -1,10 +1,16 @@
-Master Scripts
-==========
+SilentStar Scripts
 
+============================================================
+ 
 About the scripts:
-Learning lua day by day.
+Trying to do everything i can to make the scripts better.
+ 
+My scripts:
 
-There are my releases:
-Master of Hook, Master of Insec, Master of Sadness
-
-Latest Release: Twisted Fate - The Pokerman
+1. Master of Insec (Lee Sin)
+2. Master of Sadness (Amumu)
+3. Master of Hook (Thresh)
+4. The Pokerman (Twisted Fate)
+5. The Starchild (Soraka)
+ 
+Latest Release: The Starchild (Soraka)
