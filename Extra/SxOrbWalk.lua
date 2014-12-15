@@ -24,7 +24,7 @@ function SxOrbWalk:__init()
 	print("<font color=\"#F0Ff8d\"><b>SxOrbWalk: </b></font> <font color=\"#FF0F0F\">Version "..self.Version.." loaded</b></font>")
 
 	self.LuaSocket = require("socket")
-	self.AutoUpdate = {["Host"] = "raw.githubusercontent.com", ["VersionLink"] = "/SilentStar/BoLScripts/blob/master/Extra/SxOrbWalk.version", ["ScriptLink"] = "/SilentStar/BoLScripts/blob/master/Extra/SxOrbwalk.lua"}
+	self.AutoUpdate = {["Host"] = "raw.githubusercontent.com", ["VersionLink"] = "/SilentStar/BoLScripts/blob/master/Extra/SxOrbWalk.version", ["ScriptLink"] = "/SilentStar/BoLScripts/blob/master/Extra/SxOrbWalk.lua"}
 	AddTickCallback(function() self:CheckUpdate() end)
 
 end
