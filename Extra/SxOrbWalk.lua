@@ -21,7 +21,7 @@ function SxOrbWalk:__init()
 	self.BaseWindUpTime = 3
 	self.BaseAnimationTime = 0.65
 	self.Version = 1.58
-	print("<font color=\"#F0Ff8d\"><b>SxOrbWalk: </b></font> <font color=\"#FF0F0F\">Version "..self.Version.." loaded</b></font>")
+	print("<font color=\"#F0Ff8d\"><b>SxOrbWalk: </b></font> <font color=\"#FF0F0F\">Version "..self.Version.." temporary fix loaded</b></font>")
 
 	self.LuaSocket = require("socket")
 	self.AutoUpdate = {["Host"] = "raw.githubusercontent.com", ["VersionLink"] = "/SilentStar/BoLScripts/blob/master/Extra/SxOrbWalk.version", ["ScriptLink"] = "/SilentStar/BoLScripts/blob/master/Extra/SxOrbWalk.lua"}
