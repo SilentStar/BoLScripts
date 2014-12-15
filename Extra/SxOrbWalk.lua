@@ -1,4 +1,4 @@
-class "Temp_SxOrbWalk"
+class "SxOrbWalk"
 function SxOrbWalk:__init()
   self.Color = { Red = ARGB(0xFF,0xFF,0,0),Green = ARGB(0xFF,0,0xFF,0),Blue = ARGB(0xFF,0,0,0xFF), White = ARGB(0xFF,0xFF,0xFF,0xFF), Black = ARGB(0xFF, 0x00, 0x00, 0x00)}
 	self.IsBasicAttack = {["VayneCondemnMissile"] = true,["frostarrow"] = true,["CaitlynHeadshotMissile"] = true,["QuinnWEnhanced"] = true,["TrundleQ"] = true,["XenZhaoThrust"] = true,["XenZhaoThrust2"] = true,["XenZhaoThrust3"] = true,["GarenSlash2"] = true,["RenektonExecute"] = true,["RenektonSuperExecute"] = true,["KennenMegaProc"] = true,}
@@ -20,11 +20,11 @@ function SxOrbWalk:__init()
 	self.MyRange = myHero.range + myHero.boundingRadius
 	self.BaseWindUpTime = 3
 	self.BaseAnimationTime = 0.65
-	self.Version = 2.50
+	self.Version = 1.58
 	print("<font color=\"#F0Ff8d\"><b>SxOrbWalk: </b></font> <font color=\"#FF0F0F\">Version "..self.Version.." loaded</b></font>")
 
 	self.LuaSocket = require("socket")
-	self.AutoUpdate = {["Host"] = "raw.githubusercontent.com", ["VersionLink"] = "/SilentStar/BoLScripts/blob/master/Extra/SxOrbWalk.version", ["ScriptLink"] = "/SilentStar/BoLScripts/blob/master/Extra/Temp_SxOrbwalk.lua"}
+	self.AutoUpdate = {["Host"] = "raw.githubusercontent.com", ["VersionLink"] = "/SilentStar/BoLScripts/blob/master/Extra/SxOrbWalk.version", ["ScriptLink"] = "/SilentStar/BoLScripts/blob/master/Extra/SxOrbwalk.lua"}
 	AddTickCallback(function() self:CheckUpdate() end)
 
 end
