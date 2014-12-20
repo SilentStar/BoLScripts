@@ -1,6 +1,6 @@
 if myHero.charName ~= "TwistedFate" then return end
 
-local version = "1.7"
+local version = "1.8"
 local AUTOUPDATE = true
 
 local SCRIPT_NAME = "The Pokerman"
@@ -33,10 +33,6 @@ local Skills = {
 	SkillW = {range = 525, speed = math.huge, delay = 0.25, width = 200},
 	SkillR = {range = 5500}
 }
-
--- Skin Changer Thing --
-
-local LastSkin = 0
 
 -- Minions --
 targetMinions = minionManager(MINION_ENEMY, 1000, myHero, MINION_SORT_MAXHEALTH_DEC)
@@ -74,10 +70,10 @@ local isMMA = false
 local Target = nil
 
 function GetCustomTarget()
-	ts:update()
-	if _G.MMA_Target and _G.MMA_Target.type == myHero.type then return _G.MMA_Target end
-	if _G.AutoCarry and _G.AutoCarry.Crosshair and _G.AutoCarry.Attack_Crosshair and _G.AutoCarry.Attack_Crosshair.target and _G.AutoCarry.Attack_Crosshair.target.type == myHero.type then return _G.AutoCarry.Attack_Crosshair.target end
-	return ts.target
+    if _G.MMA_Target and _G.MMA_Target.type == myHero.type then return _G.MMA_Target end
+    if _G.AutoCarry and _G.AutoCarry.Crosshair and _G.AutoCarry.Attack_Crosshair and _G.AutoCarry.Attack_Crosshair.target and _G.AutoCarry.Attack_Crosshair.target.type == myHero.type then return _G.AutoCarry.Attack_Crosshair.target end
+    ts:update()
+    return ts.target
 end
 
 function OnLoad()
@@ -144,10 +140,6 @@ function initComponents()
 	TPMConfig.KSSettings:addParam("KSQ", "Killsteal with Q", SCRIPT_PARAM_ONOFF, true)
 	TPMConfig.KSSettings:addParam("KSDFG", "Killsteal with DFG", SCRIPT_PARAM_ONOFF, true)
 
-	TPMConfig:addSubMenu("[TPM] Skin Changer", "SkinChanger")
-	TPMConfig.SkinChanger:addParam("skin", "Use custom skin", SCRIPT_PARAM_ONOFF, false)
-	TPMConfig.SkinChanger:addParam("skin1", "Skin changer", SCRIPT_PARAM_SLICE, 1, 1, 9)
-
 	TPMConfig:addSubMenu("[TPM] Draw Settings", "DrawSettings")
 	TPMConfig.DrawSettings:addParam("DrawAA", "Draw AA Range", SCRIPT_PARAM_ONOFF, true)
 	TPMConfig.DrawSettings:addParam("DrawQ", "Draw Q Range", SCRIPT_PARAM_ONOFF, true)
@@ -170,12 +162,6 @@ function initComponents()
 	TPMConfig:addParam("Space","", 5, "")
 	TPMConfig:addParam("Author","Author: SilentStar", 5, "")
 	TPMConfig:addParam("Version","Version: "..version.."", 5, "")
-
-	-- Skin Changer Part --
-	if TPMConfig.SkinChanger.skin then
-		GenModelPacket("TwistedFate", TPMConfig.SkinChanger.skin1)
-		LastSkin = TPMConfig.SkinChanger.skin1
-	end
 
 	-- Target Selector Part --
 	ts = TargetSelector(TARGET_LESS_CAST_PRIORITY, 1000)
@@ -425,12 +411,6 @@ function OnTick()
 		end
 
 
-	if TPMConfig.SkinChanger.skin and SkinChanged() then
-		GenModelPacket("TwistedFate", TPMConfig.SkinChanger.skin1)
-		LastSkin = TPMConfig.SkinChanger.skin1
-	end
-
-
 	if TPMConfig.SPSettings.PingKillable then
 		for i, enemy in ipairs(GetEnemyHeroes()) do
 			if ValidTarget(enemy) and GetDistance(enemy, myHero) <= TPMConfig.SPSettings.KillableRange then
@@ -519,7 +499,7 @@ function ComboDamage(target)
 end
 
 function RecPing(X, Y)
-	Packet("R_PING", {x = X, y = Y, type = PING_FALLBACK}):receive()
+	--Need to fix that, r_ping packets.
 end
 
 function RefreshKillableTexts()
@@ -686,33 +666,4 @@ function OnProcessSpell(unit, spell)
 			end
 		end
 	end
-end
-
--- Change skin function, made by Shalzuth --
-function GenModelPacket(champ, skinId)
-	p = CLoLPacket(0x97)
-	p:EncodeF(myHero.networkID)
-	p.pos = 1
-	t1 = p:Decode1()
-	t2 = p:Decode1()
-	t3 = p:Decode1()
-	t4 = p:Decode1()
-	p:Encode1(t1)
-	p:Encode1(t2)
-	p:Encode1(t3)
-	p:Encode1(bit32.band(t4,0xB))
-	p:Encode1(1)--hardcode 1 bitfield
-	p:Encode4(skinId)
-	for i = 1, #champ do
-		p:Encode1(string.byte(champ:sub(i,i)))
-	end
-	for i = #champ + 1, 64 do
-		p:Encode1(0)
-	end
-	p:Hide()
-	RecvPacket(p)
-end
-
-function SkinChanged()
-	return TPMConfig.SkinChanger.skin1 ~= LastSkin
 end
