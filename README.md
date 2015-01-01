@@ -12,5 +12,7 @@ My scripts:
 4. The Pokerman (Twisted Fate)
 5. The Starchild (Soraka)
 6. The Unstoppable (Kalista)
+7. The Carrier (Lucian)
+8. The Craziest (Jinx)
  
-Latest Release: The Unstoppable (Kalista)
+Latest Release: The Craziest (Jinx)
