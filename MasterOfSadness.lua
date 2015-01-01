@@ -2,7 +2,7 @@ if myHero.charName ~= "Amumu" then return end
 
 if not VIP_USER then return PrintChat("Amumu - Master of Sadness > You're not a VIP USER.") end
 
-local version = "1.2"
+local version = "1.3"
 local AUTOUPDATE = true
 
 
@@ -19,7 +19,7 @@ end
 if DOWNLOADING_SOURCELIB then print("Downloading required libraries, please wait...") return end
 
 if AUTOUPDATE then
-SourceUpdater(SCRIPT_NAME, version, "raw.github.com", "/SilentStar/BoLScripts/master/"..SCRIPT_NAME..".lua", SCRIPT_PATH .. GetCurrentEnv().FILE_NAME, "/SilentStar/BoLScripts/master/VersionFiles/"..SCRIPT_NAME..".version"):CheckUpdate()
+SourceUpdater(SCRIPT_NAME, version, "raw.github.com", "/SilentStar/BoLScripts/master/"..SCRIPT_NAME..".lua", SCRIPT_PATH .. _ENV.FILE_NAME, "/SilentStar/BoLScripts/master/VersionFiles/"..SCRIPT_NAME..".version"):CheckUpdate()
 end
 
 local RequireI = Require("SourceLib")
@@ -43,10 +43,6 @@ end
 local Prodict
 local ProdictQ
 local ProdictQCol
-
--- [Skin Changer Thing] --
-
-local LastSkin = 0
 
 -- [Skill Information] --
 
@@ -100,7 +96,7 @@ function OnLoad()
 	end
 
 	MOSConfig:addSubMenu("[MOS] Prediction Settings", "PredSettings")
-	MOSConfig.PredSettings:addParam("SelectPrediction", "Select Prediction", SCRIPT_PARAM_LIST, 1, {"Prodiction", "VPrediction"})
+	MOSConfig.PredSettings:addParam("SelectPrediction", "Select Prediction", SCRIPT_PARAM_LIST, 2, {"Prodiction", "VPrediction"})
 
 	MOSConfig:addSubMenu("[MOS] Laneclear Settings", "LaneSettings")
 	MOSConfig.LaneSettings:addParam("Laneclear", "Laneclear Key", SCRIPT_PARAM_ONKEYDOWN, false, GetKey("M"))
@@ -119,10 +115,6 @@ function OnLoad()
 	MOSConfig.DrawSettings:addParam("DrawE", "Draw W Range", SCRIPT_PARAM_ONOFF, true)
 	MOSConfig.DrawSettings:addParam("DrawW", "Draw E Range", SCRIPT_PARAM_ONOFF, true)
 	MOSConfig.DrawSettings:addParam("DrawR", "Draw R Range", SCRIPT_PARAM_ONOFF, true)
-
-	MOSConfig:addSubMenu("[MOS] Skin Changer", "SkinChanger")
-	MOSConfig.SkinChanger:addParam("skin", "Use custom skin", SCRIPT_PARAM_ONOFF, true)
-	MOSConfig.SkinChanger:addParam("skin1", "Skin changer", SCRIPT_PARAM_SLICE, 8, 1, 8)
 
 	-- Orbwalker Part --
 
@@ -160,13 +152,6 @@ function OnLoad()
 			end
 	end
 
-	-- Skin Changer Part --
-
-	if MOSConfig.SkinChanger.skin then
-		GenModelPacket("Amumu", MOSConfig.SkinChanger.skin1)
-		LastSkin = MOSConfig.SkinChanger.skin1
-	end
-
 	MOSConfig.ComboSettings:permaShow("Combo")
 	MOSConfig.UltSettings:permaShow("AutoUltMode")
 	MOSConfig.UltSettings:permaShow("AutoEnemyRange")
@@ -174,8 +159,6 @@ function OnLoad()
 
 	PrintChat("<font color = \"#33CCCC\">[Amumu] Master of Sadness</font> <font color = \"#ff9100\">SilentStar</font> <font color = \"#33CCCC\">v"..version.."</font>")
 end
-
---Auto ultimate sorununu çöz(done), despair otomatik açılma kapanmayı ayarla(done), dash ayarlarını yap, lag free circle ekle, killable ult falan ayarla.
 
 function OnTick()
 	ts:update()
@@ -230,11 +213,6 @@ function OnTick()
 			end
 		end
 	end
-	
-	if MOSConfig.SkinChanger.skin and SkinChanged() then
-		GenModelPacket("Amumu", MOSConfig.SkinChanger.skin1)
-		LastSkin = MOSConfig.SkinChanger.skin1
-	end
 end
 
 function OnDraw()
@@ -261,15 +239,15 @@ function OnDraw()
 	end
 end
 
-function OnGainBuff(unit, buff)
-	if unit.name == myHero.name and buff ~= nil then
-		if buff.name == "AuraofDespair" then Despair = true end
+function OnCreateObj(obj)
+	if obj.name == "Despair_buf.troy" then
+		Despair = true
 	end
 end
 
-function OnLoseBuff(unit, buff)
-	if unit.name == myHero.name and buff ~= nil then
-		if buff.name == "AuraofDespair" then Despair = false end
+function OnDeleteObj(obj)
+	if obj.name == "Despair_buf.troy" then
+		Despair = false
 	end
 end
 
@@ -346,36 +324,6 @@ function AreaEnemyCount(Spot)
 			end
 		end              
 	return count
-end
-
--- Change skin function, made by Shalzuth --
-
-function GenModelPacket(champ, skinId)
-	p = CLoLPacket(0x97)
-	p:EncodeF(myHero.networkID)
-	p.pos = 1
-	t1 = p:Decode1()
-	t2 = p:Decode1()
-	t3 = p:Decode1()
-	t4 = p:Decode1()
-	p:Encode1(t1)
-	p:Encode1(t2)
-	p:Encode1(t3)
-	p:Encode1(bit32.band(t4,0xB))
-	p:Encode1(1)--hardcode 1 bitfield
-	p:Encode4(skinId)
-	for i = 1, #champ do
-		p:Encode1(string.byte(champ:sub(i,i)))
-	end
-	for i = #champ + 1, 64 do
-		p:Encode1(0)
-	end
-	p:Hide()
-	RecvPacket(p)
-end
-
-function SkinChanged()
-		return MOSConfig.SkinChanger.skin1 ~= LastSkin
 end
 
 function CheckEnemyInRange()
