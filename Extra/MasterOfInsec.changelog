@@ -1,0 +1,110 @@
+--[[
+
+    __  ___           __                     ____   ____                        
+   /  |/  /___ ______/ /____  _____   ____  / __/  /  _/___  ________  _____    
+  / /|_/ / __ `/ ___/ __/ _ \/ ___/  / __ \/ /_    / // __ \/ ___/ _ \/ ___/    
+ / /  / / /_/ (__  ) /_/  __/ /     / /_/ / __/  _/ // / / (__  )  __/ /__      
+/_/  /_/\__,_/____/\__/\___/_/      \____/_/    /___/_/ /_/____/\___/\___/      
+   _____ _ __           __  _____ __                                            
+  / ___/(_) /__  ____  / /_/ ___// /_____ ______                                
+  \__ \/ / / _ \/ __ \/ __/\__ \/ __/ __ `/ ___/                                
+ ___/ / / /  __/ / / / /_ ___/ / /_/ /_/ / /                                    
+/____/_/_/\___/_/ /_/\__//____/\__/\__,_/_/          Version: 5.1                           
+                                                                                
+
+Changelog for 5.1
+
+Fixed problems related to SxOrb
+Fixed mouse position insec (now moves to target instead of moving to mouse position)
+Fixed buff problems
+Fixed laneclear
+Fixed jungleclear
+Improved insec stability
+
+Changelog for 5.0
+
+Updated for new summoners rift
+Smite Q updated for new summoner smite
+Added Prodiction support
+Q Cast is more accurate now
+
+Changelog for 4.9
+
+You can now move to your mouse while doing insec or doing combo (Your hero will no longer stutter)
+Smooth insec: You will no longer fail your insec as before
+Faster insec: Removed some codes that makes lag and blocks the script
+Added text for insec target, it will show like "Insec Target: Caitlyn" (Toggle in Draw Settings)
+
+Changelog for 4.8
+
+Seperated flee mode and wardjump with different keys (Please rebind your flee & wardjump key)
+Added Packet Usage toggle for VIP users (this will affect your insec and wardjump speed)
+Added SmiteQ for VIP users (Toggle option in Additionals)
+
+Changelog for 4.7
+
+Script is lag free now
+Meet with super fast insec (only vip users)
+Changed wardjump to flee mode (Press Flee key to Jump Nearest ally or do the ward jump) *experimental
+Removed auto select nearest tower to insec option (because of lag)
+Changed name of Nearest Object to Nearest Ally
+Added an error message to tell you that you need teammates in your team *ingame
+Added new update system for less lag
+Removed SourceLib requirement
+
+Changelog for 4.6:
+
+Script is less laggy now (thanks to Bilbao)
+You need some teammates in your team if you don't want script to spam "lib p1 error"
+Insec is much smoother now
+
+Changelog for 4.5:
+
+lib path error should be fixed now.
+
+Changelog for 4.4:
+
+Fixed mouse position insec
+
+
+Changelog for 4.3:
+
+Fixed spam 'p1' error
+Disabled flash insec for a while
+Refined insec for doing it correctly, faster and smoother
+Disabled some of SxOrbwalk settings causing bugs
+
+
+Changelog for 4.2:
+
+Added old insec feature called "Select Object" (select target, select ally/turret/minion)
+Added new insec feature called "Nearest Object" (it will automatically select the nearest turret or nearest ally champion to insec)
+Added new insec feature called "Mouse Position" (it will let you to throw the enemy to your mouse position)
+Fixed ward jump giving errors
+Removed prioritize flash option (it was buggy)
+Added ward check for "Use flash if w on cooldown" option (it will use flash if you have no wards now)
+Improved ward jump speed (also when doing insec)
+Fixed harass (if you are laner lee, you should try the harass now)
+
+
+Changelog for 4.1: 
+
+Added SxOrbWalk as default Orbwalker, removed SOW
+Improved Q casting
+Removed old insec feature (select target, select ally/turret/minion)
+Removed insec selection from the insec settings menu
+Removed wardjump maximum distance cast setting
+Fixed flash insec bug
+Fixed insec not casting "R"
+Fixed wardjump (now it's better without settings)
+Added Passive Usage to Lane/Jungleclear (also for free users with a different method)
+Added Passive Usage for combo
+Only VIP users will see SkinChanger menu now
+Encrypted the script because of stealers from another forum (I got information from my friend)
+And some other stuff that i forgot to type
+
+Must do list:
+
+Set your SxOrbWalk keys same with your master of insec keys
+
+--]]
