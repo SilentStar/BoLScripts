@@ -14,5 +14,6 @@ My scripts:
 6. The Unstoppable (Kalista)
 7. The Carrier (Lucian)
 8. The Craziest (Jinx)
+9. The Poisoner (Twitch)
  
-Latest Release: The Craziest (Jinx)
+Latest Release: The Poisoner (Twitch)
