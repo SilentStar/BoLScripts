@@ -1,31 +1,36 @@
 if myHero.charName ~= "TwistedFate" then return end
 
-local version = "1.8"
+local version = "1.9"
 local AUTOUPDATE = true
+local UPDATE_HOST = "raw.github.com"
+local UPDATE_PATH = "/SilentStar/BoLScripts/master/Twisted Fate - The Pokerman.lua".."?rand="..math.random(1,10000)
+local UPDATE_FILE_PATH = SCRIPT_PATH.._ENV.FILE_NAME
+local UPDATE_URL = "https://"..UPDATE_HOST..UPDATE_PATH
 
-local SCRIPT_NAME = "The Pokerman"
-local SOURCELIB_URL = "https://raw.github.com/TheRealSource/public/master/common/SourceLib.lua"
-local SOURCELIB_PATH = LIB_PATH.."SourceLib.lua"
-if FileExist(SOURCELIB_PATH) then
-	require("SourceLib")
-else
-	DOWNLOADING_SOURCELIB = true
-	DownloadFile(SOURCELIB_URL, SOURCELIB_PATH, function() print("Required libraries downloaded successfully, please reload") end)
-end
-
-if DOWNLOADING_SOURCELIB then print("Downloading required libraries, please wait...") return end
-
+function AutoupdaterMsg(msg) print("<font color=\"#66cc00\">Twisted Fate - The Pokerman.lua:</font> <font color=\"#FFFFFF\">"..msg..".</font>") end
 if AUTOUPDATE then
-SourceUpdater(SCRIPT_NAME, version, "raw.github.com", "/SilentStar/BoLScripts/master/"..SCRIPT_NAME..".lua", SCRIPT_PATH .. GetCurrentEnv().FILE_NAME, "/SilentStar/BoLScripts/master/VersionFiles/"..SCRIPT_NAME..".version"):CheckUpdate()
+local ServerData = GetWebResult(UPDATE_HOST, "/SilentStar/BoLScripts/master/VersionFiles/Twisted Fate - The Pokerman.version")
+if ServerData then
+ServerVersion = type(tonumber(ServerData)) == "number" and tonumber(ServerData) or nil
+if ServerVersion then
+if tonumber(version) < ServerVersion then
+AutoupdaterMsg("New version available: v"..ServerVersion)
+AutoupdaterMsg("Updating, please don't press F9")
+DelayAction(function() DownloadFile(UPDATE_URL, UPDATE_FILE_PATH, function () AutoupdaterMsg("Successfully updated. ("..version.." => "..ServerVersion.."), press F9 twice to load the updated version.") end) end, 3)
+else
+--
+end
+end
+else
+AutoupdaterMsg("Error downloading version info.")
+end
 end
 
-local RequireI = Require("SourceLib")
-RequireI:Add("VPrediction", "https://raw.github.com/Hellsing/BoL/master/common/VPrediction.lua")
-RequireI:Add("SOW", "https://raw.github.com/Hellsing/BoL/master/common/SOW.lua")
+if _G.Reborn_Loaded then
+	return PrintChat("<font color = \"#FFFFFF\">[Caitlyn] </font><font color = \"#FF0000\">SAC Status:</font> <font color = \"#FFFFFF\">Please do not use this script with SAC:R, it cancels autoattacks.</font> </font>")
+end
 
-RequireI:Check()
-
-if RequireI.downloadNeeded == true then return end
+local VP = nil
 
 local Ranges = { AA = 525 }
 local Skills = {
@@ -64,25 +69,18 @@ local selected = "goldcardlock"
 local lastUse = 0
 local lastUse2 = 0
 
--- SAC-MMA Support --
-local isSAC = false
-local isMMA = false
-local Target = nil
-
 function GetCustomTarget()
-    if _G.MMA_Target and _G.MMA_Target.type == myHero.type then return _G.MMA_Target end
-    if _G.AutoCarry and _G.AutoCarry.Crosshair and _G.AutoCarry.Attack_Crosshair and _G.AutoCarry.Attack_Crosshair.target and _G.AutoCarry.Attack_Crosshair.target.type == myHero.type then return _G.AutoCarry.Attack_Crosshair.target end
-    ts:update()
-    return ts.target
+	ts:update()
+	if _G.MMA_GameFileNotification ~= nil and ValidTarget(_G.MMA_Target) then return _G.MMA_ConsideredTarget(1200) end
+	if _G.AutoCarry and ValidTarget(_G.AutoCarry.Crosshair:GetTarget()) then _G.AutoCarry.Crosshair:SetSkillCrosshairRange(1200) return _G.AutoCarry.Crosshair:GetTarget() end
+	if _G.MMA_GameFileNotification == nil and not _G.Reborn_Loaded then return ts.target end
+	return ts.target
 end
 
 function OnLoad()
-	if _G.ScriptLoaded then	return end
-	_G.ScriptLoaded = true
-	initComponents()
-end
-
-function initComponents()
+	print("<font color = \"#FFFFFF\">[Caitlyn] </font><font color = \"#FF0000\">The Impressive Shooter</font> <font color = \"#fff8e7\">by SilentStar v"..version.."</font>")
+	if _G.MMA_GameFileNotification == nil and not _G.Reborn_Loaded then require 'SxOrbWalk' end
+	require 'VPrediction'
 
 	TPMConfig = scriptConfig("The Pokerman", "Pokerman")
 
@@ -112,7 +110,7 @@ function initComponents()
 	TPMConfig.HarassSettings:addParam("AutoWselect", "Auto Harass with", SCRIPT_PARAM_LIST, 3, {"Gold Card", "Red Card", "Blue Card"})
 
 	TPMConfig:addSubMenu("[TPM] Laneclear Settings", "LaneSettings")
-	TPMConfig.LaneSettings:addParam("Laneclear", "Laneclear Key", SCRIPT_PARAM_ONKEYDOWN, false, GetKey("M"))
+	TPMConfig.LaneSettings:addParam("Laneclear", "Laneclear Key", SCRIPT_PARAM_ONKEYDOWN, false, GetKey("V"))
 	TPMConfig.LaneSettings:addParam("UseQ", "Use Q in 'Laneclear'", SCRIPT_PARAM_ONOFF, true)
 	TPMConfig.LaneSettings:addParam("UseW", "Use W in 'Laneclear'", SCRIPT_PARAM_ONOFF, true)
 	TPMConfig.LaneSettings:addParam("SelectCard", "Select card to use in 'Laneclear'", SCRIPT_PARAM_LIST, 1, {"Smart", "Only Red", "Only Blue"})
@@ -120,16 +118,16 @@ function initComponents()
 	TPMConfig.LaneSettings:addParam("ManaManager2", "Do not use (Wild Cards) under", SCRIPT_PARAM_SLICE, 40, 0, 100, 0)
 
 	TPMConfig:addSubMenu("[TPM] Jungleclear Settings", "JungleSettings")
-	TPMConfig.JungleSettings:addParam("Jungleclear", "Jungleclear Key", SCRIPT_PARAM_ONKEYDOWN, false, GetKey("M"))
+	TPMConfig.JungleSettings:addParam("Jungleclear", "Jungleclear Key", SCRIPT_PARAM_ONKEYDOWN, false, GetKey("V"))
 	TPMConfig.JungleSettings:addParam("UseQ", "Use Q in 'Jungleclear'", SCRIPT_PARAM_ONOFF, true)
 	TPMConfig.JungleSettings:addParam("UseW", "Use W in 'Jungleclear'", SCRIPT_PARAM_ONOFF, true)
 	TPMConfig.JungleSettings:addParam("SelectCard", "Select card to use in 'Jungleclear'", SCRIPT_PARAM_LIST, 1, {"Smart", "Only Red", "Only Blue"})
 	TPMConfig.JungleSettings:addParam("ManaManager", "Mana Manager (Blue Card) under", SCRIPT_PARAM_SLICE, 40, 0, 100, 0)
 	TPMConfig.JungleSettings:addParam("ManaManager2", "Do not use (Wild Cards) under", SCRIPT_PARAM_SLICE, 40, 0, 100, 0)
 
-	TPMConfig:addSubMenu("[TPM] Special Settings", "SPSettings")
-	TPMConfig.SPSettings:addParam("PingKillable", "Ping killable enemies", SCRIPT_PARAM_ONOFF, true)
-	TPMConfig.SPSettings:addParam("KillableRange", "Ping range", SCRIPT_PARAM_SLICE, 9000, 2000, 10000, 0)
+	--TPMConfig:addSubMenu("[TPM] Special Settings", "SPSettings")
+	--TPMConfig.SPSettings:addParam("PingKillable", "Ping killable enemies", SCRIPT_PARAM_ONOFF, true)
+	--TPMConfig.SPSettings:addParam("KillableRange", "Ping range", SCRIPT_PARAM_SLICE, 9000, 2000, 10000, 0)
 
 	TPMConfig:addSubMenu("[TPM] Ultimate Settings", "UltSettings")
 	TPMConfig.UltSettings:addParam("AutoSelect", "Auto Pick Card when casting ultimate", SCRIPT_PARAM_ONOFF, true)
@@ -154,25 +152,34 @@ function initComponents()
 	TPMConfig.PSSettings:addParam("permashow4", "Pick Gold Card (Permashow)", SCRIPT_PARAM_ONOFF, true)
 	TPMConfig.PSSettings:addParam("permashow5", "Pick Red Card (Permashow)", SCRIPT_PARAM_ONOFF, true)
 	TPMConfig.PSSettings:addParam("permashow6", "Pick Blue Card (Permashow)", SCRIPT_PARAM_ONOFF, true)
-	TPMConfig.PSSettings:addParam("permashow7", "Ping Killable Enemies (Permashow)", SCRIPT_PARAM_ONOFF, true)
-	TPMConfig.PSSettings:addParam("permashow8", "Ping Killable Enemies Range (Permashow)", SCRIPT_PARAM_ONOFF, true)
+	--TPMConfig.PSSettings:addParam("permashow7", "Ping Killable Enemies (Permashow)", SCRIPT_PARAM_ONOFF, true)
+	--TPMConfig.PSSettings:addParam("permashow8", "Ping Killable Enemies Range (Permashow)", SCRIPT_PARAM_ONOFF, true)
 	TPMConfig.PSSettings:addParam("WarningSpace", "-------------------------------------------------------------------", 5, "")
 	TPMConfig.PSSettings:addParam("Warning", "Warning: All changes requires 'Reload'", 5, "")
+
+	TPMConfig:addSubMenu("[TPM] Target Selector", "TSet")
 
 	TPMConfig:addParam("Space","", 5, "")
 	TPMConfig:addParam("Author","Author: SilentStar", 5, "")
 	TPMConfig:addParam("Version","Version: "..version.."", 5, "")
 
-	-- Target Selector Part --
-	ts = TargetSelector(TARGET_LESS_CAST_PRIORITY, 1000)
-	ts.name = "Focus"
-	TPMConfig:addTS(ts)
-	
-	-- VPrediction Part --
 	VP = VPrediction()
-	
-	-- Orbwalker Part --
-	Orbwalker = SOW(VP)
+
+    -- Target Selector Part --
+    ts = TargetSelector(TARGET_LESS_CAST_PRIORITY, 1200, DAMAGE_PHYSICAL)
+    ts.name = "Focus"
+	TPMConfig.TSet:addTS(ts)
+
+    -- Orbwalker Check
+	if _G.MMA_GameFileNotification ~= nil then
+		PrintChat("<font color = \"#FFFFFF\">[Caitlyn] </font><font color = \"#FF0000\">MMA Status:</font> <font color = \"#FFFFFF\">Successfully integrated.</font> </font>")
+	elseif _G.Reborn_Loaded then
+		PrintChat("<font color = \"#FFFFFF\">[Caitlyn] </font><font color = \"#FF0000\">SAC Status:</font> <font color = \"#FFFFFF\">Successfully integrated.</font> </font>")
+	else
+		PrintChat("<font color = \"#FFFFFF\">[Caitlyn] </font><font color = \"#FF0000\">Orbwalker not found:</font> <font color = \"#FFFFFF\">SxOrbWalk integrated.</font> </font>")
+		TPMConfig:addSubMenu("[TPM] Orbwalker", "SxOrb")
+		SxOrb:LoadToMenu(TPMConfig.SxOrb)
+	end
 
 	-- Ignite Check --
 
@@ -185,49 +192,21 @@ function initComponents()
 	if TPMConfig.PSSettings.permashow and TPMConfig.PSSettings.permashow4 then TPMConfig.KeyBindings:permaShow("PickGold") end
 	if TPMConfig.PSSettings.permashow and TPMConfig.PSSettings.permashow5 then TPMConfig.KeyBindings:permaShow("PickRed") end
 	if TPMConfig.PSSettings.permashow and TPMConfig.PSSettings.permashow6 then TPMConfig.KeyBindings:permaShow("PickBlue") end
-	if TPMConfig.PSSettings.permashow and TPMConfig.PSSettings.permashow7 then TPMConfig.SPSettings:permaShow("PingKillable") end
-	if TPMConfig.PSSettings.permashow and TPMConfig.PSSettings.permashow8 then TPMConfig.SPSettings:permaShow("KillableRange") end
+	--if TPMConfig.PSSettings.permashow and TPMConfig.PSSettings.permashow7 then TPMConfig.SPSettings:permaShow("PingKillable") end
+	--if TPMConfig.PSSettings.permashow and TPMConfig.PSSettings.permashow8 then TPMConfig.SPSettings:permaShow("KillableRange") end
 
 	--if TPMConfig.PSSettings.permashow and TPMConfig.PSSettings.permashow11 then TPMConfig.SPSettings:permaShow("GapCloser") end
 	--if TPMConfig.PSSettings.permashow and TPMConfig.PSSettings.permashow12 then TPMConfig.SPSettings:permaShow("Interrupt") end
 
-	PrintChat("<font color = \"#FFFFFF\">[Twisted Fate] </font><font color = \"#FF0000\">The Pokerman </font><font color = \"#FFFFFF\">by SilentStar</font> </font>")
-	PrintChat("<font color = \"#FFFFFF\">[Twisted Fate] </font><font color = \"#FF0000\">Version: </font><font color = \"#FFFFFF\">"..version.."</font> </font>")
 
-	-- Orbwalker Check
-
-	DelayAction(function()
-		PrintChat("<font color = \"#FFFFFF\">[Twisted Fate] </font><font color = \"#FF0000\">Checking for external orbwalker: </font><font color = \"#FFFFFF\">Please wait...</font> </font>")
-		end, 2.5)
-
-	-- SAC-MMA Support
-	DelayAction(function()
-	if _G.MMA_Loaded ~= nil then
-		PrintChat("<font color = \"#FFFFFF\">[Twisted Fate] </font><font color = \"#FF0000\">MMA Status:</font> <font color = \"#FFFFFF\">Successfully integrated.</font> </font>")
-		isMMA = true
-	elseif _G.AutoCarry ~= nil then
-		PrintChat("<font color = \"#FFFFFF\">[Twisted Fate] </font><font color = \"#FF0000\">SAC Status:</font> <font color = \"#FFFFFF\">Successfully integrated.</font> </font>")
-		isSAC = true
-	elseif _G.AutoCarry == nil and _G.MMA_Loaded == nil then
-		PrintChat("<font color = \"#FFFFFF\">[Twisted Fate] </font><font color = \"#FF0000\">Orbwalker not found:</font> <font color = \"#FFFFFF\">SOW integrated.</font> </font>")
-		TPMConfig:addSubMenu("[TPM] Orbwalker", "SOWorb")
-		Orbwalker:LoadToMenu(TPMConfig.SOWorb)
-	end
-	end, 10)
-
-	PrintChat("<font color = \"#FFFFFF\">[Twisted Fate] </font><font color = \"#FF0000\">Successfully loaded.</font> </font>")
 
 end
 
 function OnTick()
-	
-	local Target = GetCustomTarget()
+	Target = GetCustomTarget()
 
 	DFG, SHEEN, LICH = GetInventorySlotItem(3128) and GetInventorySlotItem(3128) or 0, GetInventorySlotItem(3057) and GetInventorySlotItem(3057) or 0, GetInventorySlotItem(3100) and GetInventorySlotItem(3100) or 0
-	Orbwalker:EnableAttacks()
-	Orbwalker:ForceTarget(Target)
 	
-	RefreshKillableTexts()
 	targetMinions:update()
 	jungleMinions:update()
 
@@ -303,22 +282,19 @@ function OnTick()
 
 		if QREADY and ValidTarget(Target) and GetDistance(Target, myHero) and TargetHaveBuff("stun", Target) then
 			local AOECastPosition, MainTargetHitChance, nTargets = VP:GetLineAOECastPosition(Target, 0, 80, 600, 2000, myHero)
-				if nTargets >= 1 then
-					if GetDistance(Target, myHero) <= Skills.SkillQ.range then
-						CastSpell(_Q, AOECastPosition.x, AOECastPosition.z)
-					end
+			if nTargets >= 1 then
+				if GetDistance(Target, myHero) <= Skills.SkillQ.range then
+					CastSpell(_Q, AOECastPosition.x, AOECastPosition.z)
 				end
+			end
 		elseif QREADY and ValidTarget(Target) and GetDistance(Target, myHero) then
 			local AOECastPosition, MainTargetHitChance, nTargets = VP:GetLineAOECastPosition(Target, 0, 80, 600, 2000, myHero)
-				if nTargets >= 1 and MainTargetHitChance >= 3 then
-					if GetDistance(Target, myHero) <= Skills.SkillQ.range then
-						CastSpell(_Q, AOECastPosition.x, AOECastPosition.z)
-					end
+			if nTargets >= 1 and MainTargetHitChance >= 3 then
+				if GetDistance(Target, myHero) <= Skills.SkillQ.range then
+					CastSpell(_Q, AOECastPosition.x, AOECastPosition.z)
 				end
+			end
 		end
-
-
-
 	end
 
 		if TPMConfig.KeyBindings.Harass then
@@ -411,7 +387,7 @@ function OnTick()
 		end
 
 
-	if TPMConfig.SPSettings.PingKillable then
+	--[[if TPMConfig.SPSettings.PingKillable then
 		for i, enemy in ipairs(GetEnemyHeroes()) do
 			if ValidTarget(enemy) and GetDistance(enemy, myHero) <= TPMConfig.SPSettings.KillableRange then
 				if (enemy.health < ComboDamage(enemy)) and ((GetTickCount() - LastAlert) > 30000) and myHero.level >= 6 and RREADY then
@@ -423,7 +399,7 @@ function OnTick()
 				end
 			end
 		end
-	end
+	end--]]
 
 	WREADY = (myHero:CanUseSpell(_W) == READY)
 	if WREADY and GetTickCount()-lastUse <= 2300 then
@@ -496,22 +472,6 @@ function ComboDamage(target)
 	end
 	
 	return m * myHero:CalcMagicDamage(target, magicdamage) + myHero:CalcDamage(target, phdamage) + truedamage
-end
-
-function RecPing(X, Y)
-	--Need to fix that, r_ping packets.
-end
-
-function RefreshKillableTexts()
-	if ((GetTickCount() - lastrefresh) > 1000) then
-		for i=1, heroManager.iCount do
-			local enemy = heroManager:GetHero(i)
-			if ValidTarget(enemy) then
-				DamageToHeros[i] =  ComboDamage(enemy)
-			end
-		end
-		lastrefresh = GetTickCount()
-	end
 end
 
 function AutoIgnite(Target)
