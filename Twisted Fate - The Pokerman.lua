@@ -1,6 +1,6 @@
 if myHero.charName ~= "TwistedFate" then return end
 
-local version = "1.9"
+local version = "2.0"
 local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/SilentStar/BoLScripts/master/Twisted Fate - The Pokerman.lua".."?rand="..math.random(1,10000)
@@ -27,7 +27,7 @@ end
 end
 
 if _G.Reborn_Loaded then
-	return PrintChat("<font color = \"#FFFFFF\">[Caitlyn] </font><font color = \"#FF0000\">SAC Status:</font> <font color = \"#FFFFFF\">Please do not use this script with SAC:R, it cancels autoattacks.</font> </font>")
+	return PrintChat("<font color = \"#FFFFFF\">[Twisted Fate] </font><font color = \"#FF0000\">SAC Status:</font> <font color = \"#FFFFFF\">Please do not use this script with SAC:R, it cancels autoattacks.</font> </font>")
 end
 
 local VP = nil
@@ -78,7 +78,7 @@ function GetCustomTarget()
 end
 
 function OnLoad()
-	print("<font color = \"#FFFFFF\">[Caitlyn] </font><font color = \"#FF0000\">The Impressive Shooter</font> <font color = \"#fff8e7\">by SilentStar v"..version.."</font>")
+	print("<font color = \"#FFFFFF\">[Twisted Fate] </font><font color = \"#FF0000\">The Pokerman</font> <font color = \"#fff8e7\">by SilentStar v"..version.."</font>")
 	if _G.MMA_GameFileNotification == nil and not _G.Reborn_Loaded then require 'SxOrbWalk' end
 	require 'VPrediction'
 
@@ -172,11 +172,11 @@ function OnLoad()
 
     -- Orbwalker Check
 	if _G.MMA_GameFileNotification ~= nil then
-		PrintChat("<font color = \"#FFFFFF\">[Caitlyn] </font><font color = \"#FF0000\">MMA Status:</font> <font color = \"#FFFFFF\">Successfully integrated.</font> </font>")
+		PrintChat("<font color = \"#FFFFFF\">[Twisted Fate] </font><font color = \"#FF0000\">MMA Status:</font> <font color = \"#FFFFFF\">Successfully integrated.</font> </font>")
 	elseif _G.Reborn_Loaded then
-		PrintChat("<font color = \"#FFFFFF\">[Caitlyn] </font><font color = \"#FF0000\">SAC Status:</font> <font color = \"#FFFFFF\">Successfully integrated.</font> </font>")
+		PrintChat("<font color = \"#FFFFFF\">[Twisted Fate] </font><font color = \"#FF0000\">SAC Status:</font> <font color = \"#FFFFFF\">Successfully integrated.</font> </font>")
 	else
-		PrintChat("<font color = \"#FFFFFF\">[Caitlyn] </font><font color = \"#FF0000\">Orbwalker not found:</font> <font color = \"#FFFFFF\">SxOrbWalk integrated.</font> </font>")
+		PrintChat("<font color = \"#FFFFFF\">[Twisted Fate] </font><font color = \"#FF0000\">Orbwalker not found:</font> <font color = \"#FFFFFF\">SxOrbWalk integrated.</font> </font>")
 		TPMConfig:addSubMenu("[TPM] Orbwalker", "SxOrb")
 		SxOrb:LoadToMenu(TPMConfig.SxOrb)
 	end
