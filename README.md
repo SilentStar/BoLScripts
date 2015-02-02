@@ -16,5 +16,7 @@ My scripts:
 8. The Craziest (Jinx)
 9. The Poisoner (Twitch)
 10. BaseUlt (Jinx-Ezreal-Draven-Ashe)
+11. The Corrosive (Kog'Maw)
  
-Latest Release: BaseUlt
+Latest Release: The Corrosive (Kog'Maw)
+Info: Added ScriptStatus Tracker
