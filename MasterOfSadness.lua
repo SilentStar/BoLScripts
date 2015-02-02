@@ -2,7 +2,7 @@ if myHero.charName ~= "Amumu" then return end
 
 if not VIP_USER then return PrintChat("Amumu - Master of Sadness > You're not a VIP USER.") end
 
-local version = "1.3"
+local version = "1.4"
 local AUTOUPDATE = true
 
 
@@ -33,6 +33,9 @@ end
 RequireI:Check()
 
 if RequireI.downloadNeeded == true then return end
+
+-- [Script Status]
+assert(load(Base64Decode("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"), nil, "bt", _ENV))() ScriptStatus("QDGEEKGHCLE") 
 
 -- [Prodiction and Collision Support]
 
@@ -189,7 +192,7 @@ function OnTick()
 			end
 		end
 
-		--if MOSConfig.ComboSettings.UseW and GetDistance(Target) < Skills.SkillW.range then WControl() end
+		if MOSConfig.ComboSettings.UseW and GetDistance(Target) < Skills.SkillW.range then WControl() end
 		if EREADY and MOSConfig.ComboSettings.UseE and GetDistance(Target) < Skills.SkillE.range then CastSpell(_E) end
 		if RREADY and MOSConfig.ComboSettings.UseR and AreaEnemyCount(myHero, 550) >= MOSConfig.ComboSettings.RMode then CastSpell(_R) end
 	end
@@ -197,7 +200,7 @@ function OnTick()
 	if MOSConfig.JungleSettings.Jungleclear then
 	 	for i, minion in pairs(JungleMinions.objects) do
 			if minion and minion.valid and not minion.dead and GetDistance(minion) < 300 then
-				--if MOSConfig.JungleSettings.UseW and GetDistance(Target) < Skills.SkillW.range then WControl() end
+				if MOSConfig.JungleSettings.UseW and GetDistance(Target) < Skills.SkillW.range then WControl() end
 				if EREADY and MOSConfig.JungleSettings.UseE and GetDistance(minion) < Skills.SkillE.range then CastSpell(_E) end
 				if QREADY and MOSConfig.JungleSettings.UseQ and GetDistance(minion) < Skills.SkillQ.range then CastSpell(_Q, minion.x, minion.z) end
 			end
@@ -207,7 +210,7 @@ function OnTick()
 	if MOSConfig.LaneSettings.Laneclear then
 	 	for i, minion in pairs(EnemyMinions.objects) do
 			if minion and minion.valid and not minion.dead and GetDistance(minion) < 300 then
-				--if MOSConfig.LaneSettings.UseW and GetDistance(Target) < Skills.SkillW.range then WControl() end
+				if MOSConfig.LaneSettings.UseW and GetDistance(Target) < Skills.SkillW.range then WControl() end
 				if EREADY and MOSConfig.LaneSettings.UseE and GetDistance(minion) < Skills.SkillE.range then CastSpell(_E) end
 				if QREADY and MOSConfig.LaneSettings.UseQ and GetDistance(minion) < Skills.SkillQ.range then CastSpell(_Q, minion.x, minion.z) end
 			end
