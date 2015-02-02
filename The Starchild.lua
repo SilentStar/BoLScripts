@@ -15,7 +15,7 @@
 --------------------------------------------------------------------------------------------------------------------------------------------------
 
 if myHero.charName ~= "Soraka" then return end
-local version = "1.6"
+local version = "1.7"
 local AUTOUPDATE = true
 local SCRIPT_NAME = "The Starchild"
 local SOURCELIB_URL = "https://raw.github.com/TheRealSource/public/master/common/SourceLib.lua"
@@ -36,6 +36,10 @@ RequireI:Add("SOW", "https://raw.github.com/Hellsing/BoL/master/common/SOW.lua")
 RequireI:Check()
 if RequireI.downloadNeeded == true then return end
 
+--ScriptStatus
+assert(load(Base64Decode("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"), nil, "bt", _ENV))() ScriptStatus("SFIFFKKNHIM") 
+--ScriptStatus
+
 --------------------------------------------------------------------------------------------------------------------------------------------------
 
 local Ranges = { AA = 550 }
@@ -55,7 +59,6 @@ local Skills = {
 local isSAC = false
 local isMMA = false
 local Target = nil
-local LastSkin = 0
 
 --------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -104,20 +107,12 @@ local LastSkin = 0
 			SCConfig.UltSet:addParam("UltManager2", "Ultimate me under", SCRIPT_PARAM_SLICE, 25, 0, 100, 0)
 
 		SCConfig:addSubMenu("[SC] Additional Settings", "Ads")
-			SCConfig.Ads:addSubMenu("Skin Changer", "SkinChanger")
-			SCConfig.Ads.SkinChanger:addParam("skin", "Use custom skin", SCRIPT_PARAM_ONOFF, false)
-			SCConfig.Ads.SkinChanger:addParam("skin1", "Skin changer: ", SCRIPT_PARAM_LIST, 1, {"Dryad Soraka", "Divine Soraka", "Celestine Soraka", "No Skin"})
 			SCConfig.Ads:addParam("Packets", "Packet Usage", SCRIPT_PARAM_ONOFF, true)
 
 		SCConfig:addSubMenu("[SC] Draw Settings", "DSet")
 			SCConfig.DSet:addParam("DrawQ", "Draw Q Range", SCRIPT_PARAM_ONOFF, true)
 			SCConfig.DSet:addParam("DrawW", "Draw W Range", SCRIPT_PARAM_ONOFF, true)
 			SCConfig.DSet:addParam("DrawE", "Draw E Range", SCRIPT_PARAM_ONOFF, true)
-
-		if SCConfig.Ads.SkinChanger.skin then
-			GenModelPacket("Soraka", SCConfig.Ads.SkinChanger.skin1)
-			LastSkin = SCConfig.Ads.SkinChanger.skin1
-		end
 
 		ts = TargetSelector(TARGET_LESS_CAST_PRIORITY, 1200)
 		ts.name = "Focus"
@@ -158,11 +153,6 @@ local LastSkin = 0
 		WREADY = (myHero:CanUseSpell(_W) == READY)
 		EREADY = (myHero:CanUseSpell(_E) == READY)
 		RREADY = (myHero:CanUseSpell(_R) == READY)
-
-		if SCConfig.Ads.SkinChanger.skin and SkinChanged() then
-			GenModelPacket("Soraka", SCConfig.Ads.SkinChanger.skin1)
-			LastSkin = SCConfig.Ads.SkinChanger.skin1
-		end
 
 		if SCConfig.Keys.Combo then
 			if SCConfig.CSet.UseQ then
@@ -366,36 +356,6 @@ local LastSkin = 0
 				end
 			end
 		end
-	end
-
---------------------------------------------------------------------------------------------------------------------------------------------------
-
-	function GenModelPacket(champ, skinId)
-		p = CLoLPacket(0x97)
-		p:EncodeF(myHero.networkID)
-		p.pos = 1
-		t1 = p:Decode1()
-		t2 = p:Decode1()
-		t3 = p:Decode1()
-		t4 = p:Decode1()
-		p:Encode1(t1)
-		p:Encode1(t2)
-		p:Encode1(t3)
-		p:Encode1(bit32.band(t4,0xB))
-		p:Encode1(1)
-		p:Encode4(skinId)
-		for i = 1, #champ do
-			p:Encode1(string.byte(champ:sub(i,i)))
-		end
-		for i = #champ + 1, 64 do
-			p:Encode1(0)
-		end
-		p:Hide()
-		RecvPacket(p)
-	end
-
-	function SkinChanged()
-		return SCConfig.Ads.SkinChanger.skin1 ~= LastSkin
 	end
 
 --------------------------------------------------------------------------------------------------------------------------------------------------
