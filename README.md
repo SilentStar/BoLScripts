@@ -18,5 +18,5 @@ My scripts:
 10. BaseUlt (Jinx-Ezreal-Draven-Ashe)
 11. The Corrosive (Kog'Maw)
  
-Latest Release: The Corrosive (Kog'Maw)
+Latest Release: The Corrosive (Kog'Maw)                   
 Info: Added ScriptStatus Tracker
